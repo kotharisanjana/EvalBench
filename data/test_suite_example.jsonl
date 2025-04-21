@@ -1,0 +1,27 @@
+// LLM QA Evaluation (RAG or Fine-tuned Models)
+{"id": "qa_001", "input": "What are the symptoms of diabetes?", "expected_answer": "Increased thirst, frequent urination, fatigue, and blurred vision", "gold_source": "People with diabetes often experience increased thirst, frequent urination, fatigue, and blurred vision."}
+{"id": "qa_002", "input": "What is the boiling point of mercury?", "expected_answer": "357°C", "gold_source": "Mercury boils at 357°C under standard atmospheric pressure."}
+{"id": "qa_003", "input": "Who wrote 'Pride and Prejudice'?", "expected_answer": "Jane Austen", "gold_source": "Pride and Prejudice was written by Jane Austen."}
+{"id": "qa_004", "input": "What causes tides on Earth?", "expected_answer": "Gravitational pull of the moon and the sun", "gold_source": "Tides are caused by the gravitational interaction between Earth, the moon, and the sun."}
+{"id": "qa_005", "input": "What is the chemical formula of table salt?", "expected_answer": "NaCl", "gold_source": "Table salt is chemically composed of sodium chloride, or NaCl."}
+
+// Semantic Search Evaluation
+{"id": "search_001", "query": "benefits of electric vehicles", "expected_documents": ["Electric vehicles produce zero emissions", "Lower cost of maintenance compared to gas cars"]}
+{"id": "search_002", "query": "advantages of renewable energy", "expected_documents": ["Sustainable and clean source of energy", "Reduces reliance on fossil fuels"]}
+{"id": "search_003", "query": "how to prevent phishing attacks", "expected_documents": ["Use two-factor authentication", "Don't click suspicious links"]}
+{"id": "search_004", "query": "machine learning vs deep learning", "expected_documents": ["Deep learning is a subset of machine learning", "Machine learning uses structured data more efficiently"]}
+{"id": "search_005", "query": "symptoms of common cold", "expected_documents": ["Sneezing, sore throat, runny nose"]}
+
+// Chatbot Response Quality
+{"id": "chat_001", "context": "I just moved to a new city and don’t know anyone.", "user_query": "What should I do?", "expected_answer": "Consider joining clubs or local groups to meet new people."}
+{"id": "chat_002", "context": "I'm feeling overwhelmed with work.", "user_query": "Any suggestions?", "expected_answer": "Try prioritizing tasks and taking short breaks to reduce stress."}
+{"id": "chat_003", "context": "My dog is sick and I don’t know what to do.", "user_query": "Help!", "expected_answer": "Please contact a veterinarian immediately."}
+{"id": "chat_004", "context": "I want to improve my productivity.", "user_query": "Tips?", "expected_answer": "Use tools like Pomodoro, set goals, and minimize distractions."}
+{"id": "chat_005", "context": "I have a big presentation tomorrow.", "user_query": "Any advice?", "expected_answer": "Practice your speech, anticipate questions, and stay confident."}
+
+// Open-ended Q&A
+{"id": "open_001", "input": "How would you approach solving climate change from a policy perspective?", "expected_answer": "Implement carbon pricing, invest in renewables, and enforce emission regulations."}
+{"id": "open_002", "input": "What advice would you give to someone starting their first job?", "expected_answer": "Be curious, communicate openly, and always be willing to learn."}
+{"id": "open_003", "input": "How should a country handle a public health crisis like a pandemic?", "expected_answer": "Transparent communication, healthcare funding, and swift action are key."}
+{"id": "open_004", "input": "Discuss the impact of technology on education.", "expected_answer": "It enables personalized learning, greater accessibility, and global classrooms."}
+{"id": "open_005", "input": "What are some ways to improve mental health in daily life?", "expected_answer": "Exercise, social connections, and mindful practices like meditation help improve mental health."}
