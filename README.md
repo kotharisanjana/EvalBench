@@ -13,5 +13,4 @@
 1. LLM QA Evaluation (RAG or fine-tuned models)
 2. Semantic Search Evaluation (based on query + result ranking)
 3. Chatbot Response Quality (user query → response + context)
-4. Knowledge Testing / MCQ Accuracy
-5. Open-ended Q&A (e.g., interview practice, medical advice, etc.)
+4. Open-ended Q&A (e.g., interview practice, medical advice, etc.)
