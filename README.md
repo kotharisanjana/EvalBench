@@ -9,9 +9,9 @@
 6. Critique Agent Activation: If hallucination detection is enabled, the CritiqueAgent (e.g., GPT-4) is called to analyze incorrect predictions, identify root causes (e.g., vague, unsupported claims), and suggest actionable fixes.
 7. Generate Structured Report: After evaluating each test case, the tool outputs a structured evaluation report.
 
-#### Project Use Cases:
-1. Model Fine-Tuning
-2. RAG Systems Evaluation
-3. Agentic AI Debugging:
-4. CI/CD Integration for LLMs
-5. Benchmarking Models
+#### Core Use Cases This Tool Can Support
+1. LLM QA Evaluation (RAG or fine-tuned models)
+2. Semantic Search Evaluation (based on query + result ranking)
+3. Chatbot Response Quality (user query → response + context)
+4. Knowledge Testing / MCQ Accuracy
+5. Open-ended Q&A (e.g., interview practice, medical advice, etc.)
