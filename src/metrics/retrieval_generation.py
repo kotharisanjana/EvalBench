@@ -1,6 +1,6 @@
 import openai
 from sentence_transformers import util
-from . import factuality_model, faithfulness_model, sentence_model
+from . import factuality_model, faithfulness_model, sentence_model, client
 
 def faithfulness_score(context: str, response: str) -> float:
     scores = faithfulness_model.predict([[context, response]])
@@ -32,8 +32,8 @@ def g_eval_groundedness(context: str, response: str) -> str:
 
     Is the response factual and grounded in the context? Give only the score.
     '''
-    completion = openai.ChatCompletion.create(
-        model='gpt-4',
+    completion = client.chat.completions.create(
+        model="mixtral-8x7b-32768",
         messages=[{'role': 'user', 'content': prompt}]
     )
-    return completion['choices'][0]['message']['content'].strip()
+    return completion.choices[0].message
