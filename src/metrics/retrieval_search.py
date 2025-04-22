@@ -10,15 +10,6 @@ def precision_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     relevant_at_k = set(retrieved_docs[:k]).intersection(set(relevant_docs))
     return len(relevant_at_k) / k
 
-def average_precision(relevant_docs: list, retrieved_docs: list):
-    hits = 0
-    sum_precisions = 0.0
-    for i, doc in enumerate(retrieved_docs):
-        if doc in relevant_docs:
-            hits += 1
-            sum_precisions += hits / (i + 1)
-    return sum_precisions / len(relevant_docs) if relevant_docs else 0.0
-
 def dcg(relevance_scores: list) -> int:
     return sum([
         (2**rel - 1) / np.log2(idx + 2)
