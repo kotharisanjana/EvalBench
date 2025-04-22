@@ -1,5 +1,5 @@
 from sentence_transformers import util
-from . import factuality_model, faithfulness_model, sentence_model, client
+from . import factuality_model, faithfulness_model, sentence_model, groq_client
 
 def faithfulness_score(context: str, response: str) -> float:
     scores = faithfulness_model.predict([[context, response]])
@@ -31,7 +31,7 @@ def g_eval_groundedness(context: str, response: str) -> str:
 
     Is the response factual and grounded in the context? Give only the score.
     '''
-    completion = client.chat.completions.create(
+    completion = groq_client.chat.completions.create(
         model='llama3-8b-8192',
         messages=[{'role': 'user', 'content': prompt}]
     )

@@ -9,7 +9,7 @@ from metrics.generation_quality import (
 
 @pytest.fixture
 def reference_generated_pair():
-    return "The cat is on the mat", "The cat sat on the mat"
+    return 'The cat is on the mat', 'The cat sat on the mat'
 
 def test_bleu(reference_generated_pair):
     ref, gen = reference_generated_pair
