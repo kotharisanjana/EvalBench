@@ -1,4 +1,3 @@
-import openai
 from sentence_transformers import util
 from . import factuality_model, faithfulness_model, sentence_model, client
 
@@ -33,7 +32,7 @@ def g_eval_groundedness(context: str, response: str) -> str:
     Is the response factual and grounded in the context? Give only the score.
     '''
     completion = client.chat.completions.create(
-        model="mixtral-8x7b-32768",
+        model='llama3-8b-8192',
         messages=[{'role': 'user', 'content': prompt}]
     )
-    return completion.choices[0].message
+    return completion.choices[0].message.content
