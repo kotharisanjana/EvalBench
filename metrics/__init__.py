@@ -1,8 +1,16 @@
-# qa: semantic_similarity/ bert_score, rouge, bleu, meteor
-# search/ retrieval: ndcg, map, recall@k, precision@k, context_relevance
-# chatbot: coherence, conciseness, helpfulness, toxicity, bias
-# openqa: factuality, hallucination, g-eval, faithfulness
-
 import nltk
+from sentence_transformers import SentenceTransformer, CrossEncoder
+from transformers import pipeline
+import openai
 
-nltk.download('punkt')
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+faithfulness_model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+factuality_model = pipeline('zero-shot-classification', 'facebook/bart-large-mnli')
+
+openai.api_key = 'your-api-key-here'
+
