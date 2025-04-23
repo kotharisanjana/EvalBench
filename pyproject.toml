@@ -7,7 +7,7 @@ name = "evalbench-metrics"
 version = "0.1.0"
 description = "A collection of evaluation metrics for conversational, retrieval, and generation tasks"
 authors = [
-    { name="Sanjana Kothari", email="sanjanak98@email.com" }
+    { name="SK", email="sk@gmail.com" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
