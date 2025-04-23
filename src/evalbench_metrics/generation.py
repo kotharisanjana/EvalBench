@@ -1,4 +1,4 @@
-from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from rouge_score import rouge_scorer
 from nltk.translate.meteor_score import meteor_score as meteor
 from nltk.tokenize import word_tokenize
@@ -9,7 +9,7 @@ from .config import sentence_model
 def bleu_score(reference: str, generated: str) -> float:
     reference_tokens = word_tokenize(reference)
     generated_tokens = word_tokenize(generated)
-    return sentence_bleu([reference_tokens], generated_tokens)
+    return sentence_bleu([reference_tokens], generated_tokens, smoothing_function=SmoothingFunction().method4)
 
 def rouge_score(reference: str, generated: str) -> dict:
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
