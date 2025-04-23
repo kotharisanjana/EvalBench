@@ -1,4 +1,5 @@
-from . import groq_client
+from .config import groq_client
+
 def evaluate_conversational_quality(context: str, response: str, metric_type: str) -> float:
     prompt = f'''
     You are a helpful evaluator. Given the following context and response, rate the response based on {metric_type} on a scale of 1 to 5.
@@ -36,3 +37,11 @@ def conciseness_score(response: str) -> float:
 
 def helpfulness_score(context: str, response: str) -> float:
     return evaluate_conversational_quality(context, response, 'helpfulness')
+
+def evaluate_all(context: str, response: str) -> dict:
+    scores = {}
+    if context and response:
+        scores['coherence_score'] = coherence_score(context, response)
+        scores['conciseness_score'] = conciseness_score(response)
+        scores['helpfulness_score'] = helpfulness_score(context, response)
+    return scores

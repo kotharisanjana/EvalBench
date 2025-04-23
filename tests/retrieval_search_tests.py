@@ -1,11 +1,11 @@
 import pytest
 import numpy as np
-from metrics.retrieval_search import (
+from evalbench_metrics.retrieval_search import (
     recall_at_k,
     precision_at_k,
     dcg,
     ndcg_at_k,
-    context_relevance
+    context_relevance_score
 )
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_context_relevance():
     query = 'What is the capital of France?'
     retrieved_contexts = ['Paris is the capital of France.', 'Berlin is the capital of Germany.',
                           'London is the capital of the UK.']
-    scores = context_relevance(query, retrieved_contexts)
+    scores = context_relevance_score(query, retrieved_contexts)
     assert isinstance(scores, list), f'Expected list, but got {type(scores)}'
     assert len(scores) == len(
         retrieved_contexts), f'Expected number of scores to match number of contexts, but got {len(scores)}'
