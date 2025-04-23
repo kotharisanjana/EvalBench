@@ -1,4 +1,5 @@
-from .config import groq_client
+from evalbench_metrics.config import groq_client
+from utils import handle_output
 
 def evaluate_conversational_quality(context: str, response: str, metric_type: str) -> float:
     prompt = f'''
@@ -29,19 +30,23 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
         print(f'Unexpected output from model: {score_str}')
         return -1.0
 
+@handle_output()
 def coherence_score(context: str, response: str) -> float:
     return evaluate_conversational_quality(context, response, 'coherence')
 
+@handle_output()
 def conciseness_score(response: str) -> float:
     return evaluate_conversational_quality('', response, 'conciseness')
 
+@handle_output()
 def helpfulness_score(context: str, response: str) -> float:
     return evaluate_conversational_quality(context, response, 'helpfulness')
 
+@handle_output()
 def evaluate_all(context: str, response: str) -> dict:
     scores = {}
     if context and response:
-        scores['coherence_score'] = coherence_score(context, response)
-        scores['conciseness_score'] = conciseness_score(response)
-        scores['helpfulness_score'] = helpfulness_score(context, response)
+        scores['coherence_score'] = coherence_score(context, response, suppress_output=True)
+        scores['conciseness_score'] = conciseness_score(response, suppress_output=True)
+        scores['helpfulness_score'] = helpfulness_score(context, response, suppress_output=True)
     return scores

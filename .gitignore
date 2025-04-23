@@ -174,3 +174,7 @@ cython_debug/
 .pypirc
 
 todo.txt
+
+.DS_Store
+src/.DS_Store
+
