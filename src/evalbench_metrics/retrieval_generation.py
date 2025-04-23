@@ -1,5 +1,5 @@
 from sentence_transformers import util
-from . import factuality_model, faithfulness_model, sentence_model, groq_client
+from .config import factuality_model, faithfulness_model, sentence_model, groq_client
 
 def faithfulness_score(context: str, response: str) -> float:
     scores = faithfulness_model.predict([[context, response]])
@@ -20,7 +20,7 @@ def factuality_score(response: str) -> float:
     scores = dict(zip(result['labels'], result['scores']))
     return scores.get('factual', 0.0)
 
-def g_eval_groundedness(context: str, response: str) -> str:
+def groundedness_score(context: str, response: str) -> str:
     prompt = f'''
     You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the answer is in the context on a scale of 1 to 5.
     Context:
@@ -36,3 +36,16 @@ def g_eval_groundedness(context: str, response: str) -> str:
         messages=[{'role': 'user', 'content': prompt}]
     )
     return completion.choices[0].message.content
+
+def evaluate_all(context: str, response: str) -> dict:
+    scores = {}
+    if context and response:
+        scores['faithfulness_score'] = faithfulness_score(context, response)
+        scores['hallucination_score'] = hallucination_score(context, response)
+        scores['factuality_score'] = factuality_score(response)
+        groundedness = groundedness_score(context, response)
+        try:
+            scores['groundedness_score'] = float(groundedness)
+        except ValueError:
+            scores['groundedness_score'] = None
+    return scores

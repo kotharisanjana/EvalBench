@@ -1,6 +1,6 @@
 import numpy as np
 from sentence_transformers import util
-from . import sentence_model
+from .config import sentence_model
 
 def recall_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     relevant_at_k = set(retrieved_docs[:k]).intersection(set(relevant_docs))
@@ -23,9 +23,18 @@ def ndcg_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     idcg_val = dcg(ideal_rel_scores)
     return dcg_val / idcg_val if idcg_val > 0 else 0.0
 
-def context_relevance(query: str, retrieved_contexts: list) -> list:
+def context_relevance_score(query: str, retrieved_contexts: list) -> list:
     query_emb = sentence_model.encode(query, convert_to_tensor=True)
     context_embs = sentence_model.encode(retrieved_contexts, convert_to_tensor=True)
     scores = util.pytorch_cos_sim(query_emb, context_embs)
     return scores.squeeze().tolist()
 
+def evaluate_all(relevant_docs: list, retrieved_docs: list, k: int, query: str, retrieved_contexts: list) -> dict:
+    scores = {}
+    if relevant_docs and retrieved_docs and k:
+        scores['recall@k'] = recall_at_k(relevant_docs, retrieved_docs, k)
+        scores['precision@k'] = precision_at_k(relevant_docs, retrieved_docs, k)
+        scores['ndcg@k'] = ndcg_at_k(relevant_docs, retrieved_docs, k)
+    if query and retrieved_contexts:
+        scores['context_relevance'] = context_relevance_score(query, retrieved_contexts)
+    return scores
