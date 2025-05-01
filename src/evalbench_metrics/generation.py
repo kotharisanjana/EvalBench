@@ -9,30 +9,40 @@ from utils import handle_output
 
 @handle_output()
 def bleu_score(reference: str, generated: str) -> float:
+    if not reference or not generated:
+        return float('-inf')
     reference_tokens = word_tokenize(reference)
     generated_tokens = word_tokenize(generated)
     return sentence_bleu([reference_tokens], generated_tokens, smoothing_function=SmoothingFunction().method4)
 
 @handle_output()
 def rouge_score(reference: str, generated: str) -> dict:
+    if not reference or not generated:
+        return {}
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     scores = scorer.score(reference, generated)
     return {k: v.fmeasure for k, v in scores.items()}
 
 @handle_output()
 def meteor_score(reference: str, generated: str) -> float:
+    if not reference or not generated:
+        return float('-inf')
     reference_tokens = word_tokenize(reference)
     generated_tokens = word_tokenize(generated)
     return meteor([reference_tokens], generated_tokens)
 
 @handle_output()
 def semantic_similarity_score(reference: str, generated: str) -> float:
+    if not reference or not generated:
+        return float('-inf')
     ref_emb = sentence_model.encode(reference, convert_to_tensor=True)
     gen_emb = sentence_model.encode(generated, convert_to_tensor=True)
     return util.pytorch_cos_sim(ref_emb, gen_emb).item()
 
 @handle_output()
 def bert_score(reference: str, generated: str) -> dict:
+    if not reference or not generated:
+        return {}
     precision, recall, f1 = bert.score(
         [generated], [reference], lang='en', verbose=False,
     )

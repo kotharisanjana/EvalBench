@@ -4,11 +4,15 @@ from utils import handle_output
 
 @handle_output()
 def faithfulness_score(context: str, response: str) -> float:
+    if not context or not response:
+        return float('-inf')
     scores = faithfulness_model.predict([[context, response]])
     return float(scores[0])
 
 @handle_output()
 def hallucination_score(context: str, response: str) -> float:
+    if not context or not response:
+        return float('-inf')
     context_emb = sentence_model.encode(context, convert_to_tensor=True)
     response_emb = sentence_model.encode(response, convert_to_tensor=True)
     similarity = util.pytorch_cos_sim(context_emb, response_emb).item()
@@ -16,6 +20,8 @@ def hallucination_score(context: str, response: str) -> float:
 
 @handle_output()
 def factuality_score(response: str) -> float:
+    if not response:
+        return float('-inf')
     result = factuality_model(
         response,
         candidate_labels=['factual', 'non-factual'],
@@ -26,6 +32,9 @@ def factuality_score(response: str) -> float:
 
 @handle_output()
 def groundedness_score(context: str, response: str) -> str:
+    if not context or not response:
+        return ''
+
     prompt = f'''
     You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the answer is in the context on a scale of 1 to 5.
     Context:

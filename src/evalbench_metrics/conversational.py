@@ -32,14 +32,20 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
 
 @handle_output()
 def coherence_score(context: str, response: str) -> float:
+    if not context or not response:
+        return float('-inf')
     return evaluate_conversational_quality(context, response, 'coherence')
 
 @handle_output()
 def conciseness_score(response: str) -> float:
+    if not response:
+        return float('-inf')
     return evaluate_conversational_quality('', response, 'conciseness')
 
 @handle_output()
 def helpfulness_score(context: str, response: str) -> float:
+    if not context or not response:
+        return float('-inf')
     return evaluate_conversational_quality(context, response, 'helpfulness')
 
 @handle_output()
