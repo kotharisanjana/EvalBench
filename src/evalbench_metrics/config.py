@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import nltk
-from sentence_transformers import SentenceTransformer, CrossEncoder
+from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from groq import Groq
 
@@ -23,25 +23,15 @@ def download_nltk_data():
         print("Downloading NLTK wordnet...")
         nltk.download('wordnet')
 
-# check if models are already downloaded
-def load_sentence_models():
-    try:
-        sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    except Exception as e:
-        print(f"Error loading sentence model: {e}")
-        sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    return sentence_model
-
 # load shared models only if not already cached or available
 def load_models():
     download_nltk_data()
-    sentence_model = load_sentence_models()
-    faithfulness_model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
-    factuality_model = pipeline('zero-shot-classification', 'facebook/bart-large-mnli')
-    return sentence_model, faithfulness_model, factuality_model
+    sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    fact_check_model = pipeline('zero-shot-classification', 'facebook/bart-large-mnli')
+    return sentence_model, fact_check_model
 
 # Load models
-sentence_model, faithfulness_model, factuality_model = load_models()
+sentence_model, fact_check_model = load_models()
 
 # initialize LLM client
 groq_client = Groq()
