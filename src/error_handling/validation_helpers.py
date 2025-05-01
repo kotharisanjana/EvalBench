@@ -1,5 +1,4 @@
-from error_handling.custom_error import MetricError
-from error_handling.errors_enum import MetricErrorMessages
+from error_handling.custom_error import MetricError, MetricErrorMessages
 
 def validate_list_type_and_non_empty(*args):
     for param_name, arg in args:

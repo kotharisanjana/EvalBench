@@ -1,9 +1,10 @@
 from evalbench_metrics.config import fact_check_model, groq_client
-from decorators import handle_output
+from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import (
     validate_string_non_empty
 )
 
+@register_metric('faithfulness', required_args=['context', 'response'], category='retrieval_generation')
 @handle_output()
 def faithfulness_score(context: str, response: str) -> float:
     validate_string_non_empty(('context', context), ('response', response))
@@ -14,6 +15,7 @@ def faithfulness_score(context: str, response: str) -> float:
     score = result['scores'][1]
     return score
 
+@register_metric('hallucination', required_args=['context', 'response'], category='retrieval_generation')
 @handle_output()
 def hallucination_score(context: str, response: str) -> float:
     validate_string_non_empty(('context', context), ('response', response))
@@ -24,6 +26,7 @@ def hallucination_score(context: str, response: str) -> float:
     score = result['scores'][1]
     return score
 
+@register_metric('factuality', required_args=['context', 'response'], category='retrieval_generation')
 @handle_output()
 def factuality_score(response: str) -> float:
     validate_string_non_empty(('response', response))
@@ -34,6 +37,7 @@ def factuality_score(response: str) -> float:
     score = result['scores'][1]
     return score
 
+@register_metric('groundedness', required_args=['context', 'response'], category='retrieval_generation')
 @handle_output()
 def groundedness_score(context: str, response: str) -> str:
     validate_string_non_empty(('context', context), ('response', response))
@@ -54,6 +58,7 @@ def groundedness_score(context: str, response: str) -> str:
     )
     return completion.choices[0].message.content
 
+@register_metric('answer_relevance', required_args=['query', 'response'], category='retrieval_generation')
 @handle_output()
 def answer_relevance_score(query: str, response: str) -> int:
     validate_string_non_empty(('query', query), ('response', response))
@@ -91,19 +96,3 @@ def answer_relevance_score(query: str, response: str) -> int:
         max_tokens=1,
     )
     return response.choices[0].message.content.strip()
-
-@handle_output()
-def evaluate_all(context: str, response: str, query: str) -> dict:
-    scores = {}
-    if context and response:
-        scores['faithfulness_score'] = faithfulness_score(context, response, suppress_output=True)
-        scores['hallucination_score'] = hallucination_score(context, response, suppress_output=True)
-        scores['factuality_score'] = factuality_score(response, suppress_output=True)
-        groundedness = groundedness_score(context, response, suppress_output=True)
-        try:
-            scores['groundedness_score'] = float(groundedness)
-        except ValueError:
-            scores['groundedness_score'] = None
-    if query and response:
-        scores['answer_relevance_score'] = answer_relevance_score(query, response)
-    return scores
