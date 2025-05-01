@@ -1,5 +1,5 @@
 from evalbench_metrics.config import groq_client
-from decorators import handle_output
+from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import(
     validate_string_non_empty
 )
@@ -33,26 +33,22 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
         print(f'Unexpected output from model: {score_str}')
         return -1.0
 
+@register_metric('coherence', required_args=['context', 'response'], category='conversational')
 @handle_output()
 def coherence_score(context: str, response: str) -> float:
     validate_string_non_empty(('context', context), ('response', response))
     return evaluate_conversational_quality(context, response, 'coherence')
 
+@register_metric('conciseness', required_args=['response'], category='conversational')
 @handle_output()
 def conciseness_score(response: str) -> float:
     validate_string_non_empty(('response', response))
     return evaluate_conversational_quality('', response, 'conciseness')
 
+@register_metric('helpfulness', required_args=['context', 'response'], category='conversational')
 @handle_output()
 def helpfulness_score(context: str, response: str) -> float:
     validate_string_non_empty(('context', context), ('response', response))
     return evaluate_conversational_quality(context, response, 'helpfulness')
 
-@handle_output()
-def evaluate_all(context: str, response: str) -> dict:
-    scores = {}
-    if context and response:
-        scores['coherence_score'] = coherence_score(context, response, suppress_output=True)
-        scores['conciseness_score'] = conciseness_score(response, suppress_output=True)
-        scores['helpfulness_score'] = helpfulness_score(context, response, suppress_output=True)
-    return scores
+

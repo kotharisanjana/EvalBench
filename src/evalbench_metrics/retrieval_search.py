@@ -1,14 +1,13 @@
 import numpy as np
-
 from error_handling.validation_helpers import (
     validate_positive_integer,
     validate_list_type_and_non_empty,
     validate_string_non_empty
 )
 from evalbench_metrics.config import groq_client
-from decorators import handle_output, register_metric
+from utils.decorators import handle_output, register_metric
 
-@register_metric('recall@k', required_args=['relevant_docs', 'retrieved_docs', 'k'])
+@register_metric('recall@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def recall_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -17,7 +16,7 @@ def recall_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     relevant_at_k = set(retrieved_docs[:k]).intersection(set(relevant_docs))
     return len(relevant_at_k) / len(relevant_docs) if relevant_docs else 0.0
 
-@register_metric('precision@k', required_args=['relevant_docs', 'retrieved_docs', 'k'])
+@register_metric('precision@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def precision_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -33,7 +32,7 @@ def dcg(relevance_scores: list) -> int:
         for idx, rel in enumerate(relevance_scores)
     ])
 
-@register_metric('rndcg@k', required_args=['relevant_docs', 'retrieved_docs', 'k'])
+@register_metric('rndcg@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def ndcg_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -45,7 +44,7 @@ def ndcg_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
     idcg_val = dcg(ideal_rel_scores)
     return dcg_val / idcg_val if idcg_val > 0 else 0.0
 
-@register_metric('context_relevance', required_args=['query', 'retrieved_docs'])
+@register_metric('context_relevance', required_args=['query', 'retrieved_docs'], category='retrieval_search')
 @handle_output()
 def context_relevance_score(query: str, retrieved_docs: list) -> list:
     validate_string_non_empty(query, 'query')
@@ -92,7 +91,7 @@ def context_relevance_score(query: str, retrieved_docs: list) -> list:
             scores.append(0)
     return scores
 
-@register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs'])
+@register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs'], category='retrieval_search')
 @handle_output()
 def mrr_score(retrieved_docs: list, relevant_docs: list) -> float:
     validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -102,15 +101,3 @@ def mrr_score(retrieved_docs: list, relevant_docs: list) -> float:
         return 1 / rank
     except ValueError:
         return 0.0
-
-@handle_output()
-def evaluate_all(relevant_docs: list, retrieved_docs: list, k: int, query: str, retrieved_contexts: list) -> dict:
-    scores = {}
-    if relevant_docs and retrieved_docs and k:
-        scores['recall@k'] = recall_at_k(relevant_docs, retrieved_docs, k, suppress_output=True)
-        scores['precision@k'] = precision_at_k(relevant_docs, retrieved_docs, k, suppress_output=True)
-        scores['ndcg@k'] = ndcg_at_k(relevant_docs, retrieved_docs, k, suppress_output=True)
-        scores['mrr'] = mrr_score(retrieved_docs, relevant_docs)
-    if query and retrieved_contexts:
-        scores['context_relevance'] = context_relevance_score(query, retrieved_contexts, suppress_output=True)
-    return scores
