@@ -2,6 +2,7 @@ import json
 import os
 from functools import wraps
 from evalbench_metrics import config
+from typing import Callable, List
 
 def handle_output():
     def decorator(func):
@@ -49,3 +50,14 @@ def _save_results(name, result):
 
     with open(config.json_filepath, 'w') as f:
         json.dump(data, f, indent=4)
+
+# Decorator to register metrics with their required arguments
+def register_metric(name: str, required_args: List[str]):
+    metric_registry = {}
+    def decorator(func: Callable):
+        metric_registry[name] = {
+            'func': func,
+            'required_args': required_args
+        }
+        return func
+    return decorator
