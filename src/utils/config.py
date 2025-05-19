@@ -1,0 +1,32 @@
+import os
+from sentence_transformers import SentenceTransformer
+from transformers import pipeline
+from groq import Groq
+from utils.helper import download_nltk_data
+
+class EvalConfig:
+    def __init__(
+        self,
+        groq_api_key=None,
+        download_nltk=True,
+        sentence_model='sentence-transformers/all-MiniLM-L6-v2',
+        fact_check_model='facebook/bart-large-mnli',
+        output_mode='print',
+        json_filepath='evaluation_results.json',
+        groq_client=None,
+    ):
+        self.groq_api_key = groq_api_key or os.getenv('GROQ_API_KEY')
+        if not self.groq_api_key:
+            raise ValueError("GROQ API key must be provided via constructor or env variable.")
+
+        os.environ['GROQ_API_KEY'] = self.groq_api_key
+        if download_nltk:
+            download_nltk_data()
+
+        # Initialize once and store
+        self.sentence_model = SentenceTransformer(sentence_model)
+        self.fact_check_model = pipeline('zero-shot-classification', fact_check_model)
+        self.groq_client = groq_client or Groq()
+
+        self.output_mode = output_mode
+        self.json_filepath = json_filepath

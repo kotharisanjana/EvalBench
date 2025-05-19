@@ -1,9 +1,11 @@
-from evalbench_metrics.config import groq_client
+from utils.helper import get_config
 from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import(
     validate_type_string_non_empty,
     validate_num_args,
 )
+
+cfg = get_config()
 
 def evaluate_conversational_quality(context: str, response: str, metric_type: str) -> float:
     prompt = f'''
@@ -20,7 +22,7 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
     Respond only with a number between 1 and 5. Do not include any explanation or text.
     '''
 
-    completion = groq_client.chat.completions.create(
+    completion = cfg.groq_client.chat.completions.create(
         model='llama3-8b-8192',
         messages=[{'role': 'user', 'content': prompt}],
         temperature=0.0,
@@ -34,21 +36,21 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
         print(f'Unexpected output from model: {score_str}')
         return -1.0
 
-@register_metric('coherence', required_args=['context', 'generated'], category='conversational')
+@register_metric('coherence', required_args=['context', 'generated'], module='conversational')
 @handle_output()
 def coherence_score(context: str, generated: str) -> float:
     validate_num_args((('context', context), ('generated', generated)), length=2)
     validate_type_string_non_empty(('context', context), ('generated', generated))
     return evaluate_conversational_quality(context, generated, 'coherence')
 
-@register_metric('conciseness', required_args=['generated'], category='conversational')
+@register_metric('conciseness', required_args=['generated'], module='conversational')
 @handle_output()
 def conciseness_score(generated: str) -> float:
     validate_num_args(('generated', generated), length=1)
     validate_type_string_non_empty(('generated', generated))
     return evaluate_conversational_quality('', generated, 'conciseness')
 
-@register_metric('helpfulness', required_args=['context', 'generated'], category='conversational')
+@register_metric('helpfulness', required_args=['context', 'generated'], module='conversational')
 @handle_output()
 def helpfulness_score(context: str, generated: str) -> float:
     validate_num_args((('context', context), ('generated', generated)), length=2)

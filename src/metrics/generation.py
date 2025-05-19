@@ -4,14 +4,16 @@ from nltk.translate.meteor_score import meteor_score as meteor
 from nltk.tokenize import word_tokenize
 import bert_score as bert
 from sentence_transformers import util
-from evalbench_metrics.config import sentence_model
+from utils.helper import get_config
 from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import (
     validate_type_string_non_empty,
     validate_num_args
 )
 
-@register_metric('bleu', required_args=['reference', 'generated'], category='generation')
+cfg = get_config()
+
+@register_metric('bleu', required_args=['reference', 'generated'], module='generation')
 @handle_output()
 def bleu_score(reference: str, generated: str) -> float:
     validate_num_args((('reference', reference), ('generated', generated)), length=2)
@@ -21,7 +23,7 @@ def bleu_score(reference: str, generated: str) -> float:
     generated_tokens = word_tokenize(generated)
     return sentence_bleu([reference_tokens], generated_tokens, smoothing_function=SmoothingFunction().method4)
 
-@register_metric('rouge', required_args=['reference', 'generated'], category='generation')
+@register_metric('rouge', required_args=['reference', 'generated'], module='generation')
 @handle_output()
 def rouge_score(reference: str, generated: str) -> dict:
     validate_num_args((('reference', reference), ('generated', generated)), length=2)
@@ -31,7 +33,7 @@ def rouge_score(reference: str, generated: str) -> dict:
     scores = scorer.score(reference, generated)
     return {k: v.fmeasure for k, v in scores.items()}
 
-@register_metric('meteor', required_args=['reference', 'generated'], category='generation')
+@register_metric('meteor', required_args=['reference', 'generated'], module='generation')
 @handle_output()
 def meteor_score(reference: str, generated: str) -> float:
     validate_num_args((('reference', reference), ('generated', generated)), length=2)
@@ -41,17 +43,17 @@ def meteor_score(reference: str, generated: str) -> float:
     generated_tokens = word_tokenize(generated)
     return meteor([reference_tokens], generated_tokens)
 
-@register_metric('semantic_similarity', required_args=['reference', 'generated'], category='generation')
+@register_metric('semantic_similarity', required_args=['reference', 'generated'], module='generation')
 @handle_output()
 def semantic_similarity_score(reference: str, generated: str) -> float:
     validate_num_args((('reference', reference), ('generated', generated)), length=2)
     validate_type_string_non_empty(('reference', reference), ('generated', generated))
 
-    ref_emb = sentence_model.encode(reference, convert_to_tensor=True)
-    gen_emb = sentence_model.encode(generated, convert_to_tensor=True)
+    ref_emb = cfg.gsentence_model.encode(reference, convert_to_tensor=True)
+    gen_emb = cfg.sentence_model.encode(generated, convert_to_tensor=True)
     return util.pytorch_cos_sim(ref_emb, gen_emb).item()
 
-@register_metric('bert', required_args=['reference', 'generated'], category='generation')
+@register_metric('bert', required_args=['reference', 'generated'], module='generation')
 @handle_output()
 def bert_score(reference: str, generated: str) -> dict:
     validate_num_args((('reference', reference), ('generated', generated)), length=2)

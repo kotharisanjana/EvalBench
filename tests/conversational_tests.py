@@ -1,4 +1,4 @@
-from evalbench_metrics.conversational import (
+from metrics.conversational import (
     coherence_score,
     conciseness_score,
     helpfulness_score,

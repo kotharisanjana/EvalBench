@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from evalbench_metrics.retrieval_search import (
+from metrics.retrieval_search import (
     recall_at_k,
     precision_at_k,
     dcg,

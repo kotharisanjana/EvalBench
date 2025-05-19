@@ -1,11 +1,13 @@
-from evalbench_metrics.config import fact_check_model, groq_client
+from utils.helper import  get_config
 from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import (
     validate_type_string_non_empty,
     validate_num_args
 )
 
-@register_metric('faithfulness', required_args=['context', 'generated'], category='retrieval_generation')
+cfg = get_config()
+
+@register_metric('faithfulness', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
 def faithfulness_score(context: str, generated: str) -> float:
     validate_num_args((('context', context), ('generated', generated)), length=2)
@@ -13,11 +15,11 @@ def faithfulness_score(context: str, generated: str) -> float:
 
     candidate_labels = ["faithful to context", "unfaithful to context"]
     hypothesis = f"Is the following response faithful to the context? Context: '{context}'. Response: '{generated}'"
-    result = fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
+    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
     score = result['scores'][1]
     return score
 
-@register_metric('hallucination', required_args=['context', 'generated'], category='retrieval_generation')
+@register_metric('hallucination', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
 def hallucination_score(context: str, generated: str) -> float:
     validate_num_args((('context', context), ('generated', generated)), length=2)
@@ -25,11 +27,11 @@ def hallucination_score(context: str, generated: str) -> float:
 
     candidate_labels = ["consistent with context", "hallucinated"]
     hypothesis = f"Does the following response align with the given context? Check for hallucination Context: '{context}'. Response: '{generated}'"
-    result = fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
+    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
     score = result['scores'][1]
     return score
 
-@register_metric('factuality', required_args=['generated'], category='retrieval_generation')
+@register_metric('factuality', required_args=['generated'], module='retrieval_generation')
 @handle_output()
 def factuality_score(generated: str) -> float:
     validate_num_args(('generated', generated), length=1)
@@ -37,11 +39,11 @@ def factuality_score(generated: str) -> float:
 
     candidate_labels = ["factually correct", "factually incorrect"]
     hypothesis = f"Is the following response factually correct. Response: '{generated}'"
-    result = fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
+    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
     score = result['scores'][1]
     return score
 
-@register_metric('groundedness', required_args=['context', 'generated'], category='retrieval_generation')
+@register_metric('groundedness', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
 def groundedness_score(context: str, generated: str) -> str:
     validate_num_args((('context', context), ('generated', generated)), length=2)
@@ -57,13 +59,13 @@ def groundedness_score(context: str, generated: str) -> str:
 
     Is the response factual and grounded in the context? Give only the score.
     '''
-    completion = groq_client.chat.completions.create(
+    completion = cfg.groq_client.chat.completions.create(
         model='llama3-8b-8192',
         messages=[{'role': 'user', 'content': prompt}]
     )
     return completion.choices[0].message.content
 
-@register_metric('answer_relevance', required_args=['query', 'response'], category='retrieval_generation')
+@register_metric('answer_relevance', required_args=['query', 'response'], module='retrieval_generation')
 @handle_output()
 def answer_relevance_score(query: str, response: str) -> float:
     validate_num_args((('query', query), ('response', response)), length=2)
@@ -95,7 +97,7 @@ def answer_relevance_score(query: str, response: str) -> float:
     Relevance Score:
     '''
 
-    response = groq_client.chat.completions.create(
+    response = cfg.groq_client.chat.completions.create(
         model='llama3-8b-8192',
         messages=[{'role': 'user', 'content': prompt}],
         temperature=0,

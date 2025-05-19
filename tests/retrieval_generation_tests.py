@@ -1,5 +1,5 @@
 from error_handling.custom_error import MetricError
-from evalbench_metrics.retrieval_generation import (
+from metrics.retrieval_generation import (
     faithfulness_score,
     hallucination_score,
     factuality_score,

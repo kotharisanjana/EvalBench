@@ -1,6 +1,6 @@
 import pytest
 from error_handling.custom_error import MetricError
-from evalbench_metrics.generation import (
+from metrics.generation import (
     bleu_score,
     rouge_score,
     meteor_score,
