@@ -1,5 +1,4 @@
 from typing import Any
-
 from error_handling.custom_error import MetricError, MetricErrorMessages
 from utils.registry import metric_registry
 

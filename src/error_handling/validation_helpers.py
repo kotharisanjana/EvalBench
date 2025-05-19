@@ -1,17 +1,19 @@
 from error_handling.custom_error import MetricError, MetricErrorMessages
 
-def validate_list_type_and_non_empty(*args):
+def validate_type_list_non_empty(*args):
     for param_name, arg in args:
-        if not isinstance(arg, list):
-            raise MetricError(MetricErrorMessages.INVALID_LIST_TYPE, param=param_name)
-        if not arg:
-            raise MetricError(MetricErrorMessages.EMPTY_LIST, param=param_name)
+        if not isinstance(arg, list) or not arg:
+            raise MetricError(MetricErrorMessages.INVALID_LIST, param=param_name)
 
-def validate_positive_integer(value: int, param_name: str):
+def validate_type_int_positive_integer(value: int, param_name: str):
     if not isinstance(value, int) or value <= 0:
-        raise MetricError(MetricErrorMessages.INVALID_INT_TYPE, param=param_name)
+        raise MetricError(MetricErrorMessages.INVALID_INT, param=param_name)
 
-def validate_string_non_empty(*args):
+def validate_type_string_non_empty(*args):
     for param_name, arg in args:
-        raise MetricError(MetricErrorMessages.EMPTY_STRING, param=param_name)
+        if not isinstance(arg, str) or not arg:
+            raise MetricError(MetricErrorMessages.INVALID_STRING, param=param_name)
 
+def validate_num_args(*args, length: int):
+    if len(args[0]) != length:
+        raise MetricError(MetricErrorMessages.MISSING_REQUIRED_PARAM)

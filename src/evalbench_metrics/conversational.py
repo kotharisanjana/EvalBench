@@ -1,7 +1,8 @@
 from evalbench_metrics.config import groq_client
 from utils.decorators import handle_output, register_metric
 from error_handling.validation_helpers import(
-    validate_string_non_empty
+    validate_type_string_non_empty,
+    validate_num_args,
 )
 
 def evaluate_conversational_quality(context: str, response: str, metric_type: str) -> float:
@@ -33,22 +34,25 @@ def evaluate_conversational_quality(context: str, response: str, metric_type: st
         print(f'Unexpected output from model: {score_str}')
         return -1.0
 
-@register_metric('coherence', required_args=['context', 'response'], category='conversational')
+@register_metric('coherence', required_args=['context', 'generated'], category='conversational')
 @handle_output()
-def coherence_score(context: str, response: str) -> float:
-    validate_string_non_empty(('context', context), ('response', response))
-    return evaluate_conversational_quality(context, response, 'coherence')
+def coherence_score(context: str, generated: str) -> float:
+    validate_num_args((('context', context), ('generated', generated)), length=2)
+    validate_type_string_non_empty(('context', context), ('generated', generated))
+    return evaluate_conversational_quality(context, generated, 'coherence')
 
-@register_metric('conciseness', required_args=['response'], category='conversational')
+@register_metric('conciseness', required_args=['generated'], category='conversational')
 @handle_output()
-def conciseness_score(response: str) -> float:
-    validate_string_non_empty(('response', response))
-    return evaluate_conversational_quality('', response, 'conciseness')
+def conciseness_score(generated: str) -> float:
+    validate_num_args(('generated', generated), length=1)
+    validate_type_string_non_empty(('generated', generated))
+    return evaluate_conversational_quality('', generated, 'conciseness')
 
-@register_metric('helpfulness', required_args=['context', 'response'], category='conversational')
+@register_metric('helpfulness', required_args=['context', 'generated'], category='conversational')
 @handle_output()
-def helpfulness_score(context: str, response: str) -> float:
-    validate_string_non_empty(('context', context), ('response', response))
-    return evaluate_conversational_quality(context, response, 'helpfulness')
+def helpfulness_score(context: str, generated: str) -> float:
+    validate_num_args((('context', context), ('generated', generated)), length=2)
+    validate_type_string_non_empty(('context', context), ('generated', generated))
+    return evaluate_conversational_quality(context, generated, 'helpfulness')
 
 

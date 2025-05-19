@@ -22,9 +22,9 @@ def handle_output():
             elif config.output_mode == 'save':
                 _save_results(func.__name__, result, error_message)
 
-            # if error_message:
-            #     return {'error': error_message}
-            # return result
+            if error_message:
+                return {'error': error_message}
+            return result
         return wrapper
     return decorator
 

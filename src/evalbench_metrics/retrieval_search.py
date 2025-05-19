@@ -1,8 +1,9 @@
 import numpy as np
 from error_handling.validation_helpers import (
-    validate_positive_integer,
-    validate_list_type_and_non_empty,
-    validate_string_non_empty
+    validate_type_int_positive_integer,
+    validate_type_list_non_empty,
+    validate_type_string_non_empty,
+    validate_num_args
 )
 from evalbench_metrics.config import groq_client
 from utils.decorators import handle_output, register_metric
@@ -10,8 +11,9 @@ from utils.decorators import handle_output, register_metric
 @register_metric('recall@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def recall_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
-    validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
-    validate_positive_integer(k, 'k')
+    validate_num_args((('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs), k), length=3)
+    validate_type_list_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
+    validate_type_int_positive_integer(k, 'k')
 
     relevant_at_k = set(retrieved_docs[:k]).intersection(set(relevant_docs))
     return len(relevant_at_k) / len(relevant_docs) if relevant_docs else 0.0
@@ -19,13 +21,13 @@ def recall_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
 @register_metric('precision@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def precision_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
-    validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
-    validate_positive_integer(k, 'k')
+    validate_num_args((('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs), k), length=3)
+    validate_type_list_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
+    validate_type_int_positive_integer(k, 'k')
 
     relevant_at_k = set(retrieved_docs[:k]).intersection(set(relevant_docs))
     return len(relevant_at_k) / k
 
-@handle_output()
 def dcg(relevance_scores: list) -> int:
     return sum([
         (2**rel - 1) / np.log2(idx + 2)
@@ -35,8 +37,9 @@ def dcg(relevance_scores: list) -> int:
 @register_metric('rndcg@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], category='retrieval_search')
 @handle_output()
 def ndcg_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
-    validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
-    validate_positive_integer(k, 'k')
+    validate_num_args((('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs), k), length=3)
+    validate_type_list_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
+    validate_type_int_positive_integer(k, 'k')
 
     rel_scores = [1 if doc in relevant_docs else 0 for doc in retrieved_docs[:k]]
     ideal_rel_scores = sorted(rel_scores, reverse=True)
@@ -47,8 +50,9 @@ def ndcg_at_k(relevant_docs: list, retrieved_docs: list, k: int) -> float:
 @register_metric('context_relevance', required_args=['query', 'retrieved_docs'], category='retrieval_search')
 @handle_output()
 def context_relevance_score(query: str, retrieved_docs: list) -> list:
-    validate_string_non_empty(query, 'query')
-    validate_list_type_and_non_empty(('retrieved_docs', retrieved_docs))
+    validate_num_args((('query', query), ('retrieved_docs', retrieved_docs)), length=2)
+    validate_type_string_non_empty(query, 'query')
+    validate_type_list_non_empty(('retrieved_docs', retrieved_docs))
 
     scores = []
     for context in retrieved_docs:
@@ -94,7 +98,8 @@ def context_relevance_score(query: str, retrieved_docs: list) -> list:
 @register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs'], category='retrieval_search')
 @handle_output()
 def mrr_score(retrieved_docs: list, relevant_docs: list) -> float:
-    validate_list_type_and_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
+    validate_num_args((('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs)), length=2)
+    validate_type_list_non_empty(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
 
     try:
         rank = retrieved_docs.index(relevant_docs) + 1
