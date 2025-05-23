@@ -1,69 +1,90 @@
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from typing import List, Dict
+from nltk.translate.bleu_score import sentence_bleu
 from rouge_score import rouge_scorer
 from nltk.translate.meteor_score import meteor_score as meteor
 from nltk.tokenize import word_tokenize
 import bert_score as bert
 from sentence_transformers import util
-from utils.helper import get_config
-from utils.decorators import handle_output, register_metric
-from error_handling.validation_helpers import (
-    validate_type_string_non_empty,
-    validate_num_args
-)
+from utils.helper import get_config, handle_output, register_metric
+import error_handling.validation_helpers as validation
 
 cfg = get_config()
 
 @register_metric('bleu', required_args=['reference', 'generated'], module='generation')
 @handle_output()
-def bleu_score(reference: str, generated: str) -> float:
-    validate_num_args((('reference', reference), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('reference', reference), ('generated', generated))
-
-    reference_tokens = word_tokenize(reference)
-    generated_tokens = word_tokenize(generated)
-    return sentence_bleu([reference_tokens], generated_tokens, smoothing_function=SmoothingFunction().method4)
+def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
+    """
+    :param reference: list of reference strings
+    :param generated: list of generated strings
+    :return: list of bleu scores
+    """
+    validation.validate_batch_inputs(reference, generated)
+    return [
+        sentence_bleu([word_tokenize(ref)], word_tokenize(gen))
+        for ref, gen in zip(reference, generated)
+    ]
 
 @register_metric('rouge', required_args=['reference', 'generated'], module='generation')
 @handle_output()
-def rouge_score(reference: str, generated: str) -> dict:
-    validate_num_args((('reference', reference), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('reference', reference), ('generated', generated))
-
+def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
+    """
+    :param reference: list of reference strings
+    :param generated: list of generated strings
+    :return: list of rouge scores
+    """
+    validation.validate_batch_inputs(reference, generated)
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
-    scores = scorer.score(reference, generated)
-    return {k: v.fmeasure for k, v in scores.items()}
+    return [
+        {k: v.fmeasure for k, v in scorer.score(ref, gen).items()}
+        for ref, gen in zip(reference, generated)
+    ]
 
 @register_metric('meteor', required_args=['reference', 'generated'], module='generation')
 @handle_output()
-def meteor_score(reference: str, generated: str) -> float:
-    validate_num_args((('reference', reference), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('reference', reference), ('generated', generated))
-
-    reference_tokens = word_tokenize(reference)
-    generated_tokens = word_tokenize(generated)
-    return meteor([reference_tokens], generated_tokens)
+def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
+    """
+    :param reference: list of reference strings
+    :param generated: list of generated strings
+    :return: list of meteor scores
+    """
+    validation.validate_batch_inputs(reference, generated)
+    return [
+        meteor([word_tokenize(ref)], word_tokenize(gen))
+        for ref, gen in zip(reference, generated)
+    ]
 
 @register_metric('semantic_similarity', required_args=['reference', 'generated'], module='generation')
 @handle_output()
-def semantic_similarity_score(reference: str, generated: str) -> float:
-    validate_num_args((('reference', reference), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('reference', reference), ('generated', generated))
-
-    ref_emb = cfg.gsentence_model.encode(reference, convert_to_tensor=True)
-    gen_emb = cfg.sentence_model.encode(generated, convert_to_tensor=True)
-    return util.pytorch_cos_sim(ref_emb, gen_emb).item()
+def semantic_similarity_score(reference: List[str], generated: List[str]) -> List[float]:
+    """
+    :param reference: list of reference strings
+    :param generated: list of generated strings
+    :return: list of semantic similarity scores
+    """
+    validation.validate_batch_inputs(reference, generated)
+    return [
+        util.pytorch_cos_sim(
+            cfg.sentence_model.encode(ref, convert_to_tensor=True),
+            cfg.sentence_model.encode(gen, convert_to_tensor=True)
+        ).item()
+        for ref, gen in zip(reference, generated)
+    ]
 
 @register_metric('bert', required_args=['reference', 'generated'], module='generation')
 @handle_output()
-def bert_score(reference: str, generated: str) -> dict:
-    validate_num_args((('reference', reference), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('reference', reference), ('generated', generated))
-
-    precision, recall, f1 = bert.score(
-        [generated], [reference], lang='en', verbose=False,
-    )
-    return {
-        'precision': precision.mean().item(),
-        'recall': recall.mean().item(),
-        'f1': f1.mean().item()
-    }
+def bert_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
+    """
+    :param reference: list of reference strings
+    :param generated: list of generated strings
+    :return: list of BERT scores
+    """
+    validation.validate_batch_inputs(reference, generated)
+    precision, recall, f1 = bert.score(generated, reference, lang='en', verbose=False)
+    return [
+        {
+            'precision': precision[i].item(),
+            'recall': recall[i].item(),
+            'f1': f1[i].item()
+        }
+        for i in range(len(reference))
+    ]

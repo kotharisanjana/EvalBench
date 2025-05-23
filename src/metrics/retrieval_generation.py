@@ -1,106 +1,141 @@
-from utils.helper import  get_config
-from utils.decorators import handle_output, register_metric
-from error_handling.validation_helpers import (
-    validate_type_string_non_empty,
-    validate_num_args
-)
+from typing import List
+from utils.helper import  get_config, handle_output, register_metric
+import error_handling.validation_helpers as validation
 
 cfg = get_config()
 
 @register_metric('faithfulness', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
-def faithfulness_score(context: str, generated: str) -> float:
-    validate_num_args((('context', context), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('context', context), ('generated', generated))
+def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[float]:
+    """
+    :param context: list of context strings
+    :param generated: list of generated strings
+    :return: list of faithfulness scores
+    """
+    validation.validate_batch_inputs(context, generated)
 
     candidate_labels = ["faithful to context", "unfaithful to context"]
-    hypothesis = f"Is the following response faithful to the context? Context: '{context}'. Response: '{generated}'"
-    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
-    score = result['scores'][1]
-    return score
+    results = []
+    for ctx, gen in zip(context, generated):
+        hypothesis = f"Is the following response faithful to the context? Context: '{' '.join(ctx)}'. Response: '{gen}'"
+        score = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
+        results.append(score['scores'][1])
+
+    return results
 
 @register_metric('hallucination', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
-def hallucination_score(context: str, generated: str) -> float:
-    validate_num_args((('context', context), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('context', context), ('generated', generated))
+def hallucination_score(context: List[List[str]], generated: List[str]) -> List[float]:
+    """
+    :param context: list of context strings
+    :param generated: list of generated strings
+    :return: list of hallucination scores
+    """
+    validation.validate_batch_inputs(context, generated)
 
     candidate_labels = ["consistent with context", "hallucinated"]
-    hypothesis = f"Does the following response align with the given context? Check for hallucination Context: '{context}'. Response: '{generated}'"
-    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
-    score = result['scores'][1]
-    return score
+    results = []
+    for ctx, gen in zip(context, generated):
+        hypothesis = f"Does the following response align with the given context? Check for hallucination Context: '{' '.join(ctx)}'. Response: '{gen}'"
+        score = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
+        results.append(score['scores'][1])
 
-@register_metric('factuality', required_args=['generated'], module='retrieval_generation')
-@handle_output()
-def factuality_score(generated: str) -> float:
-    validate_num_args(('generated', generated), length=1)
-    validate_type_string_non_empty(('generated', generated))
-
-    candidate_labels = ["factually correct", "factually incorrect"]
-    hypothesis = f"Is the following response factually correct. Response: '{generated}'"
-    result = cfg.fact_check_model(generated, candidate_labels, hypothesis=hypothesis)
-    score = result['scores'][1]
-    return score
+    return results
 
 @register_metric('groundedness', required_args=['context', 'generated'], module='retrieval_generation')
 @handle_output()
-def groundedness_score(context: str, generated: str) -> str:
-    validate_num_args((('context', context), ('generated', generated)), length=2)
-    validate_type_string_non_empty(('context', context), ('generated', generated))
+def groundedness_score(context: List[List[str]], generated: List[str]) -> List[float]:
+    """
+    :param context: list of context strings
+    :param generated: list of generated strings
+    :return: list of groundedness scores
+    """
+    validation.validate_batch_inputs(context, generated)
 
-    prompt = f'''
-    You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the answer is in the context on a scale of 1 to 5.
-    Context:
-    \'\'\'{context}\'\'\'
+    results = []
+    for ctx, gen in zip(context, generated):
+        prompt = f'''
+        You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the answer is in the context on a scale of 1 to 5.
+        Context:
+        \'\'\'{ctx}\'\'\'
+    
+        Response:
+        \'\'\'{gen}\'\'\'
+    
+        Is the response factual and grounded in the context? Give only the score.
+        '''
 
-    Response:
-    \'\'\'{generated}\'\'\'
+        try:
+            completion = cfg.groq_client.chat.completions.create(
+                model='llama3-8b-8192',
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            score = float(completion.choices[0].message.content)
+            results.append(score)
+        except ValueError:
+            pass
 
-    Is the response factual and grounded in the context? Give only the score.
-    '''
-    completion = cfg.groq_client.chat.completions.create(
-        model='llama3-8b-8192',
-        messages=[{'role': 'user', 'content': prompt}]
-    )
-    return completion.choices[0].message.content
+    return results
 
 @register_metric('answer_relevance', required_args=['query', 'response'], module='retrieval_generation')
 @handle_output()
-def answer_relevance_score(query: str, response: str) -> float:
-    validate_num_args((('query', query), ('response', response)), length=2)
-    validate_type_string_non_empty(('query', query), ('response', response))
+def answer_relevance_score(query: List[str], response: List[str]) -> List[float]:
+    """
+    :param query: list of query strings
+    :param response: list of response strings
+    :return: list of answer relevance scores
+    """
+    validation.validate_batch_inputs(query, response)
 
-    prompt = f'''
-    You are an expert language evaluator. Your task is to assess the **relevance** of a response to a given question.
-    
-    A relevant response:
-    - Directly addresses the question.
-    - Provides accurate and specific information.
-    - Avoids vague, unrelated, or generic responses.
-    
-    Instructions:
-    - Use a scale from **1 to 5** to rate the relevance:
-        1 = Completely irrelevant
-        2 = Weakly related, mostly off-topic
-        3 = Partially relevant, some connection
-        4 = Mostly relevant, minor issues
-        5 = Fully relevant and on-topic
-    
-    ONLY return a single number (1, 2, 3, 4, or 5). Do not explain your reasoning.
-    ---
-    
-    **Question:** {query}
+    results = []
+    for q, r in zip(query, response):
+        prompt = f'''
+        You are an expert evaluator. Rate how **relevant** a given response is to a specific question, on a scale from **1 to 5**.
+        
+        ### Scoring Guidelines:
+        1 = Completely irrelevant  
+        2 = Weakly related, mostly off-topic  
+        3 = Partially relevant, some connection  
+        4 = Mostly relevant, minor issues  
+        5 = Fully relevant, directly answers the question
+        
+        ### Instructions:
+        - Use the full 1–5 scale.
+        - ONLY return the number. Do not include explanations or comments.
+        
+        ### Examples:
+        
+        **Question:** "What is the capital of France?"  
+        **Response:** "Bananas are a good source of potassium."  
+        **Rating:** 1
+        
+        **Question:** "What is the capital of France?"  
+        **Response:** "France is a country in Europe."  
+        **Rating:** 3
+        
+        **Question:** "What is the capital of France?"  
+        **Response:** "The capital of France is Paris."  
+        **Rating:** 5
+        
+        ### Now evaluate this:
+        
+        **Question:** {q}  
+        **Response:** {r}  
+        
+        Relevance Score:
+        '''.strip()
 
-    **Response:** {response}
-    
-    Relevance Score:
-    '''
+        try:
+            completion = cfg.groq_client.chat.completions.create(
+                model='llama3-8b-8192',
+                messages=[{'role': 'user', 'content': prompt}],
+                temperature=0.0,
+                max_tokens=1,
+            )
+            score = completion.choices[0].message.content.strip()
+            results.append(float(score))
+        except ValueError:
+            pass
 
-    response = cfg.groq_client.chat.completions.create(
-        model='llama3-8b-8192',
-        messages=[{'role': 'user', 'content': prompt}],
-        temperature=0,
-        max_tokens=1,
-    )
-    return float(response.choices[0].message.content.strip())
+    return results
+

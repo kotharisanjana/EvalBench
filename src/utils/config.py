@@ -1,4 +1,6 @@
 import os
+import json
+import yaml
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from groq import Groq
@@ -30,3 +32,15 @@ class EvalConfig:
 
         self.output_mode = output_mode
         self.json_filepath = json_filepath
+
+    @classmethod
+    def from_file(cls, file_path):
+        with open(file_path, 'r') as f:
+            if file_path.endswith(".yaml") or file_path.endswith(".yml"):
+                data = yaml.safe_load(f)
+            elif file_path.endswith(".json"):
+                data = json.load(f)
+            else:
+                raise ValueError("Unsupported config file format. Use .yaml or .json")
+
+        return cls(**data)

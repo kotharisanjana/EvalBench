@@ -1,12 +1,6 @@
 import pytest
 from error_handling.custom_error import MetricError
-from metrics.generation import (
-    bleu_score,
-    rouge_score,
-    meteor_score,
-    semantic_similarity_score,
-    bert_score
-)
+import metrics.generation as metric
 
 @pytest.fixture
 def reference_generated_pair():
