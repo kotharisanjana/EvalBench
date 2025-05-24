@@ -44,3 +44,22 @@ class EvalConfig:
                 raise ValueError("Unsupported config file format. Use .yaml or .json")
 
         return cls(**data)
+
+    # validate config
+    def validate(self):
+        errors = []
+
+        if not self.groq_api_key:
+            errors.append("Missing GROQ API key.")
+
+        if not isinstance(self.output_mode, str) or self.output_mode not in ('print', 'json'):
+            errors.append(f"Invalid output_mode: {self.output_mode}")
+
+        # Optional: check model names are strings
+        if not isinstance(self.sentence_model, SentenceTransformer):
+            errors.append("sentence_model not initialized correctly.")
+        if not callable(getattr(self.fact_check_model, "__call__", None)):
+            errors.append("fact_check_model not callable (should be a HuggingFace pipeline).")
+
+        if errors:
+            raise ValueError("Invalid configuration:\n" + "\n".join(f" - {e}" for e in errors))

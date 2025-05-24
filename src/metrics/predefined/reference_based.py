@@ -8,60 +8,44 @@ from sentence_transformers import util
 from utils.helper import get_config, handle_output, register_metric
 import error_handling.validation_helpers as validation
 
-cfg = get_config()
-
-@register_metric('bleu', required_args=['reference', 'generated'], module='generation')
+@register_metric('bleu', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
-    """
-    :param reference: list of reference strings
-    :param generated: list of generated strings
-    :return: list of bleu scores
-    """
     validation.validate_batch_inputs(reference, generated)
+
     return [
         sentence_bleu([word_tokenize(ref)], word_tokenize(gen))
         for ref, gen in zip(reference, generated)
     ]
 
-@register_metric('rouge', required_args=['reference', 'generated'], module='generation')
+@register_metric('rouge', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    """
-    :param reference: list of reference strings
-    :param generated: list of generated strings
-    :return: list of rouge scores
-    """
     validation.validate_batch_inputs(reference, generated)
+
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     return [
         {k: v.fmeasure for k, v in scorer.score(ref, gen).items()}
         for ref, gen in zip(reference, generated)
     ]
 
-@register_metric('meteor', required_args=['reference', 'generated'], module='generation')
+@register_metric('meteor', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
-    """
-    :param reference: list of reference strings
-    :param generated: list of generated strings
-    :return: list of meteor scores
-    """
     validation.validate_batch_inputs(reference, generated)
+
     return [
         meteor([word_tokenize(ref)], word_tokenize(gen))
         for ref, gen in zip(reference, generated)
     ]
 
-@register_metric('semantic_similarity', required_args=['reference', 'generated'], module='generation')
+@register_metric('semantic_similarity', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def semantic_similarity_score(reference: List[str], generated: List[str]) -> List[float]:
-    """
-    :param reference: list of reference strings
-    :param generated: list of generated strings
-    :return: list of semantic similarity scores
-    """
     validation.validate_batch_inputs(reference, generated)
+
+    cfg = get_config()
+
     return [
         util.pytorch_cos_sim(
             cfg.sentence_model.encode(ref, convert_to_tensor=True),
@@ -70,15 +54,11 @@ def semantic_similarity_score(reference: List[str], generated: List[str]) -> Lis
         for ref, gen in zip(reference, generated)
     ]
 
-@register_metric('bert', required_args=['reference', 'generated'], module='generation')
+@register_metric('bert', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def bert_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    """
-    :param reference: list of reference strings
-    :param generated: list of generated strings
-    :return: list of BERT scores
-    """
     validation.validate_batch_inputs(reference, generated)
+
     precision, recall, f1 = bert.score(generated, reference, lang='en', verbose=False)
     return [
         {

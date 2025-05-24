@@ -24,7 +24,7 @@ def validate_list_length(*args):
         raise MetricError(MetricErrorMessages.LIST_LENGTH_MISMATCH)
 
 def validate_batch_inputs(list_1: Union[List[str], List[List[str]]], list_2: Union[List[str], List[List[str]]]):
-    validate_num_args((('reference', list_1), ('generated', list_2)), length=2)
-    validate_list_length(('reference', list_1), ('generated', list_2))
-    for ref, gen in zip(list_1, list_2):
-        validate_type_string_non_empty(('reference', ref), ('generated', gen))
+    validate_num_args((list_1, list_2), length=2)
+    validate_list_length(list_1, list_2)
+    # for ref, gen in zip(list_1, list_2):
+    #     validate_type_string_non_empty(('reference', ref), ('generated', gen))

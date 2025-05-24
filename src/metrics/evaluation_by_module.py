@@ -1,7 +1,7 @@
 import os
 from error_handling.custom_error import MetricError, MetricErrorMessages
 from utils.registry import metric_registry
-from custom_metrics import load_custom_metrics
+from metrics.custom.custom_metrics import load_custom_metrics
 
 def evaluate_module(modules, custom_metric_path = None, **kwargs):
     if not modules:

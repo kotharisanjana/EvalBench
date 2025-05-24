@@ -5,7 +5,7 @@ class MetricErrorMessages(Enum):
     INVALID_LIST = "{param}' must be a non-empty list."
     INVALID_STRING = "{param} must be a non-empty string."
     MISSING_REQUIRED_PARAM = "One/more required parameters missing."
-    LIST_LENGTH_MISMATCH = "{param} and {param} lists must be of equal length."
+    LIST_LENGTH_MISMATCH = "Inputs must be of equal length."
 
     def format_message(self, **kwargs):
         return self.value.format(**kwargs)
