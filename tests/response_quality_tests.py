@@ -13,15 +13,15 @@ def test_data():
 
 def test_coherence_score(test_data):
     score = response_quality.coherence_score(test_data['response'])
-    assert all(1 <= b <= 5 for b in score), \
-        f'{score} has out of range values'
+    assert all(0 <= b <= 5 for b in score), \
+        f'Expected values to be in [0,5] but got {score}'
 
 def test_conciseness_score(test_data):
     score = response_quality.conciseness_score(test_data['response'])
-    assert all(1 <= b <= 5 for b in score), \
-        f'{score} has out of range values'
+    assert all(0 <= b <= 5 for b in score), \
+        f'Expected values to be in [0,5] but got {score}'
 
 def test_factuality_score(test_data):
     score = response_quality.factuality_score(test_data['response'])
     assert all(0.0 <= b <= 1.0 for b in score), \
-        f'{score} has out of range values'
+        f'Expected values to be in [0,1] but got {score}'

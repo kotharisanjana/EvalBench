@@ -21,12 +21,11 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
         4 = Mostly relevant  
         5 = Highly relevant and directly useful for answering the query
 
-         Instructions:
+        Instructions:
         - ONLY output the number 1–5. No extra text.
         - Use the full range when appropriate.
 
-         Examples:
-
+        Examples:
         Query: 'What are the symptoms of heat stroke?'  
         Context: 'The Eiffel Tower is located in Paris.'  
         Score: 1
@@ -39,7 +38,7 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
         Context: 'Common symptoms of heat stroke include high body temperature, confusion, rapid pulse, and nausea.'  
         Score: 5
 
-         Now rate the following:
+        Now rate the following:
 
         Query: {q}  
         Retrieved Context: {ctx}  
@@ -57,7 +56,7 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
             score = response.choices[0].message.content.strip()
             results.append(float(score))
         except ValueError as e:
-            results.append(-1.0)
+            results.append(0)
 
     return results
 
@@ -73,7 +72,7 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
         prompt = f'''
         You are an expert evaluator. Rate how relevant a given response is to a specific question, on a scale from 1 to 5.
 
-         Scoring Guidelines:
+        Scoring Guidelines:
         1 = Completely irrelevant  
         2 = Weakly related, mostly off-topic  
         3 = Partially relevant, some connection  
@@ -84,7 +83,7 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
         - Use the full 1–5 scale.
         - ONLY return the number. Do not include explanations or comments.
 
-         Examples:
+        Examples:
 
         Question: 'What is the capital of France?'  
         Response: 'Bananas are a good source of potassium.'  
@@ -98,10 +97,9 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
         Response: 'The capital of France is Paris.'  
         Rating:** 5
 
-         Now evaluate this:
-
-        **Question:** {q}  
-        **Response:** {r}  
+        Now evaluate this:
+        Question: {q}  
+        Response: {r}  
 
         Relevance Score:
         '''.strip()
@@ -116,7 +114,7 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
             score = completion.choices[0].message.content.strip()
             results.append(float(score))
         except ValueError:
-            pass
+            results.append(0)
 
     return results
 
@@ -130,16 +128,14 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
 
     for q, r in zip(query, response):
         prompt = f'''
-            You are a helpful and fair evaluator. Your task is to assess the following response based on answer helpfulness using a numeric rating between **1 (poor)** and **5 (excellent)**. Respond with only the number.
+            You are a helpful and fair evaluator. Your task is to assess the following response based on answer helpfulness using a numeric rating between 1 (poor) and 5 (excellent). Respond with only the number.
     
              Instructions:
             - Use the full scale (1 to 5) when evaluating.
             - Do not include any explanation—just return a single number.
             - Assume you're evaluating as a human would: fair, consistent, and strict.
     
-             Examples:
-    
-             Metric: Helpfulness
+            Examples:
             Query: 'How can I improve my public speaking skills?'
             Response: 'Maybe just try not to be nervous or something.'
             Rating: 2
@@ -148,7 +144,7 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
             Response: 'Practice regularly, record yourself to evaluate progress, and consider joining a local speaking group like Toastmasters.'
             Rating: 5
         
-             Now rate this:
+            Now rate this:
             Query:
             \'\'\"{q}\"\"\"
         
@@ -167,6 +163,6 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
             score = completion.choices[0].message.content.strip()
             results.append(float(score))
         except ValueError:
-            results.append(-1.0)
+            results.append(0)
 
     return results

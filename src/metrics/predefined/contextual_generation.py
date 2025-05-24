@@ -41,13 +41,12 @@ def hallucination_score(context: List[List[str]], generated: List[str]) -> List[
         labels = result["labels"]
         scores = result["scores"]
         # Lower entailment score = higher hallucination likelihood
-        entailment_score = scores[labels.index("entailment")]
-        results.append(1 - entailment_score)
+        results.append(1 - scores[labels.index("entailment")])
 
     return results
 
 @register_metric('groundedness', required_args=['context', 'generated'], module='contextual_generation')
-# @handle_output()
+@handle_output()
 def groundedness_score(context: List[List[str]], generated: List[str]) -> List[float]:
     validation.validate_batch_inputs(context, generated)
 
@@ -56,14 +55,14 @@ def groundedness_score(context: List[List[str]], generated: List[str]) -> List[f
 
     for ctx, gen in zip(context, generated):
         prompt = f'''
-        You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the answer is in the context on a scale of 0 to 5.
+        You are a helpful evaluator. Given the following retrieved context and the answer, rate how grounded the response is in the context on a scale of 1 to 5.
         Context:
         \'\'\'{ctx}\'\'\'
     
         Response:
         \'\'\'{gen}\'\'\'
     
-        Is the response factual and grounded in the context? Give only the score.
+        Is the response grounded in the context? Give only the score.
         '''
 
         try:
@@ -74,7 +73,7 @@ def groundedness_score(context: List[List[str]], generated: List[str]) -> List[f
             score = float(completion.choices[0].message.content)
             results.append(score)
         except ValueError:
-            results.append(-1.0)
+            results.append(0)
 
     return results
 

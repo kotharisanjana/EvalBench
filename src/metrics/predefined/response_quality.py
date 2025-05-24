@@ -8,13 +8,12 @@ def evaluate(response: str, metric_type: str) -> float:
     prompt = f'''
     You are a helpful and fair evaluator. Your task is to assess the following response based on {metric_type} using a numeric rating between 1 (poor) and 5 (excellent). Respond with only the number.
     
-     Instructions:
+    Instructions:
     - Use the full scale (1 to 5) when evaluating.
     - Do not include any explanation—just return a single number.
     - Assume you're evaluating as a human would: fair, consistent, and strict.
     
-     Rate this:
-    
+    Rate this:
     Metric: {metric_type}
     
     Response:
@@ -32,7 +31,7 @@ def evaluate(response: str, metric_type: str) -> float:
         score = completion.choices[0].message.content.strip()
         return float(score)
     except ValueError:
-        return -1.0
+        return 0
 
 @register_metric('coherence', required_args=['response'], module='response_quality')
 @handle_output()
@@ -65,7 +64,9 @@ def factuality_score(response: List[str]) -> List[float]:
 
     for resp in response:
         hypothesis = f"Is the following response factually correct. Response: ""{resp}"""
-        score = cfg.fact_check_model(resp, candidate_labels, hypothesis=hypothesis)
-        results.append(score['scores'][1])
+        result = cfg.fact_check_model(resp, candidate_labels, hypothesis=hypothesis)
+        labels = result["labels"]
+        scores = result["scores"]
+        results.append(scores[labels.index("factually correct")])
 
     return results

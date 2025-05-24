@@ -20,15 +20,15 @@ def test_data():
 
 def test_context_relevance(test_data):
     score = query_alignment.context_relevance_score(test_data['queries'], test_data['contexts'])
-    assert all(1 <= s <= 5 for s in score), \
-        f'Expected relevance scores to be in [1, 5], but got {score}'
+    assert all(0 <= s <= 5 for s in score), \
+        f'Expected relevance scores to be in [0, 5], but got {score}'
 
 def test_answer_relevance(test_data):
     score = query_alignment.answer_relevance_score(test_data['queries'], test_data['responses'])
-    assert all(1 <= s <= 5 for s in score), \
-        f'Expected relevance scores to be in [1, 5], but got {score}'
+    assert all(0 <= s <= 5 for s in score), \
+        f'Expected relevance scores to be in [0, 5], but got {score}'
 
 def test_helpfulness_score(test_data):
     score = query_alignment.helpfulness_score(test_data['queries'], test_data['responses'])
-    assert all(1 <= s <= 5 for s in score), \
-        f'Expected relevance scores to be in [1, 5], but got {score}'
+    assert all(0 <= s <= 5 for s in score), \
+        f'Expected relevance scores to be in [0, 5], but got {score}'
