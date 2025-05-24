@@ -1,11 +1,11 @@
 from typing import List
-from utils.helper import get_config, handle_output, register_metric
-import error_handling.validation_helpers as validation
+from evalbench.utils.helper import get_config, handle_output, register_metric
+import evalbench.error_handling.validation_helpers as validation
 
 @register_metric('context_relevance', required_args=['query', 'context'], module='query_alignment')
 @handle_output()
 def context_relevance_score(query: List[str], context: List[str]) -> List[float]:
-    validation.validate_batch_inputs(query, context)
+    validation.validate_batch_inputs(('context', context), ('query', query))
 
     cfg = get_config()
     results = []
@@ -63,7 +63,7 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
 @register_metric('answer_relevance', required_args=['query', 'response'], module='query_alignment')
 @handle_output()
 def answer_relevance_score(query: List[str], response: List[str]) -> List[float]:
-    validation.validate_batch_inputs(query, response)
+    validation.validate_batch_inputs(('response', response), ('query', query))
 
     cfg = get_config()
     results = []
@@ -121,7 +121,7 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
 @register_metric('answer_helpfulness', required_args=['query', 'response'], module='query_alignment')
 @handle_output()
 def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
-    validation.validate_batch_inputs(query, response)
+    validation.validate_batch_inputs(('response', response), ('query', query))
 
     cfg = get_config()
     results = []

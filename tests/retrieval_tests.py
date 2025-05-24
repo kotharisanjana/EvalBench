@@ -1,5 +1,5 @@
 import pytest
-import metrics.predefined.retrieval as retrieval
+import evalbench.metrics.predefined.retrieval as retrieval
 
 @pytest.fixture
 def test_data():

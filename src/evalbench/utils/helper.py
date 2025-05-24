@@ -3,8 +3,8 @@ import json
 import os
 from functools import wraps
 from typing import Callable, List
-from utils.registry import metric_registry
-from utils.runtime import get_config
+from evalbench.utils.registry import metric_registry
+from evalbench.utils.runtime import get_config
 
 def handle_output():
     def decorator(func):
@@ -30,20 +30,26 @@ def handle_output():
         return wrapper
     return decorator
 
-def _print_results(name, result, error_message):
+def _print_results(name, results, error_message=None):
     print(f"\n{name.upper()}:")
     if error_message:
-        print(f"  Error: {error_message}")
-    elif isinstance(result, dict):
-        for k, v in result.items():
-            if isinstance(v, dict):
-                print(f"  {k}:")
-                for sub_k, sub_v in v.items():
-                    print(f"    {sub_k}: {sub_v:.3f}")
-            else:
-                print(f"  {k}: {v:.3f}")
+        print(f"Error: {error_message}")
+        return
+
+    if not results:
+        print("No results")
+        return
+
+    if all(isinstance(r, (float, int)) for r in results):
+        for i, score in enumerate(results, 1):
+            print(f"Score {i}: {score:.3f}")
+    elif all(isinstance(r, dict) for r in results):
+        for i, res_dict in enumerate(results, 1):
+            print(f"Item {i}:")
+            for k, v in res_dict.items():
+                print(f"    {k}: {v:.3f}")
     else:
-        print(f"  Score: {result:.3f}")
+        print("Results:", results)
 
 def _save_results(name, result, error_message):
     cfg = get_config()

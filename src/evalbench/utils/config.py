@@ -4,7 +4,7 @@ import yaml
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from groq import Groq
-from utils.helper import download_nltk_data
+from evalbench.utils.helper import download_nltk_data
 
 class EvalConfig:
     def __init__(
@@ -52,7 +52,7 @@ class EvalConfig:
         if not self.groq_api_key:
             errors.append("Missing GROQ API key.")
 
-        if not isinstance(self.output_mode, str) or self.output_mode not in ('print', 'json'):
+        if not isinstance(self.output_mode, str) or self.output_mode not in ('print', 'save'):
             errors.append(f"Invalid output_mode: {self.output_mode}")
 
         # Optional: check model names are strings

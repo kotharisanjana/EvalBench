@@ -5,13 +5,13 @@ from nltk.translate.meteor_score import meteor_score as meteor
 from nltk.tokenize import word_tokenize
 import bert_score as bert
 from sentence_transformers import util
-from utils.helper import get_config, handle_output, register_metric
-import error_handling.validation_helpers as validation
+from evalbench.utils.helper import get_config, handle_output, register_metric
+import evalbench.error_handling.validation_helpers as validation
 
 @register_metric('bleu', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(reference, generated)
+    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     return [
         sentence_bleu([word_tokenize(ref)], word_tokenize(gen))
@@ -21,7 +21,7 @@ def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
 @register_metric('rouge', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    validation.validate_batch_inputs(reference, generated)
+    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     return [
@@ -32,7 +32,7 @@ def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, fl
 @register_metric('meteor', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(reference, generated)
+    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     return [
         meteor([word_tokenize(ref)], word_tokenize(gen))
@@ -42,7 +42,7 @@ def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
 @register_metric('semantic_similarity', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def semantic_similarity_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(reference, generated)
+    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     cfg = get_config()
 
@@ -57,7 +57,7 @@ def semantic_similarity_score(reference: List[str], generated: List[str]) -> Lis
 @register_metric('bert', required_args=['reference', 'generated'], module='reference_based')
 @handle_output()
 def bert_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    validation.validate_batch_inputs(reference, generated)
+    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     precision, recall, f1 = bert.score(generated, reference, lang='en', verbose=False)
     return [
