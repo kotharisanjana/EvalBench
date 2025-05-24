@@ -1,30 +1,32 @@
+import nltk
 import json
 import os
 from functools import wraps
 from typing import Callable, List
-from evalbench_metrics import config
 from utils.registry import metric_registry
+from utils.runtime import get_config
 
 def handle_output():
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, suppress_output=False, **kwargs):
+        def wrapper(*args, **kwargs):
             result = None
             error_message = None
+            cfg = get_config()
 
             try:
                 result = func(*args, **kwargs)
             except Exception as e:
                 error_message = str(e)
 
-            if config.output_mode == 'print':
+            if cfg.output_mode == 'print':
                 _print_results(func.__name__, result, error_message)
-            elif config.output_mode == 'save':
+            elif cfg.output_mode == 'save':
                 _save_results(func.__name__, result, error_message)
 
-            # if error_message:
-            #     return {'error': error_message}
-            # return result
+            if error_message:
+                return {'error': error_message}
+            return result
         return wrapper
     return decorator
 
@@ -44,11 +46,12 @@ def _print_results(name, result, error_message):
         print(f"  Score: {result:.3f}")
 
 def _save_results(name, result, error_message):
-    directory = os.path.dirname(config.json_filepath)
+    cfg = get_config()
+    directory = os.path.dirname(cfg.json_filepath)
     if directory and not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
-    if os.path.exists(config.json_filepath):
-        with open(config.json_filepath, 'r') as f:
+    if os.path.exists(cfg.json_filepath):
+        with open(cfg.json_filepath, 'r') as f:
             data = json.load(f)
     else:
         data = []
@@ -63,16 +66,30 @@ def _save_results(name, result, error_message):
 
     data.append(entry)
 
-    with open(config.json_filepath, 'w') as f:
+    with open(cfg.json_filepath, 'w') as f:
         json.dump(data, f, indent=4)
 
 # Decorator to register metrics with their required arguments
-def register_metric(name: str, required_args: List[str], category: str):
+def register_metric(name: str, required_args: List[str], module: str):
     def decorator(func: Callable):
         metric_registry[name] = {
             'func': func,
             'required_args': required_args,
-            'category': category,
+            'module': module,
         }
         return func
     return decorator
+
+# download NLTK data if not present
+def download_nltk_data():
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        print("Downloading NLTK punkt...")
+        nltk.download('punkt')
+
+    try:
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        print("Downloading NLTK wordnet...")
+        nltk.download('wordnet')

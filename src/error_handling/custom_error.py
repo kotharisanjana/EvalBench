@@ -1,11 +1,11 @@
 from enum import Enum
 
 class MetricErrorMessages(Enum):
-    INVALID_LIST_TYPE = "{param}' must be a list."
-    INVALID_INT_TYPE = "{param} must be a positive integer."
-    EMPTY_LIST = "{param}' must be a non-empty list."
-    EMPTY_STRING = "{param} must be a non-empty string."
-    MISSING_REQUIRED_PARAM = "{param}' parameter is missing."
+    INVALID_INT = "{param} must be a positive integer."
+    INVALID_LIST = "{param}' must be a non-empty list."
+    INVALID_STRING = "{param} must be a non-empty string."
+    MISSING_REQUIRED_PARAM = "One/more required parameters missing."
+    LIST_LENGTH_MISMATCH = "Inputs must be lists of equal length."
 
     def format_message(self, **kwargs):
         return self.value.format(**kwargs)
