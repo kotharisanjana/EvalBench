@@ -10,7 +10,8 @@ _module_names = {
     "reference_based": "metrics.predefined.reference_based",
     "contextual_generation": "metrics.predefined.contextual_generation",
     "retrieval": "metrics.predefined.retrieval",
-    "query_alignment": "metrics.predefined.query_alignment"
+    "query_alignment": "metrics.predefined.query_alignment",
+    "response_alignment": "metrics.predefined.response_alignment",
 }
 
 __all__ = []
