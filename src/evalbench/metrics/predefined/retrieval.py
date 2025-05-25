@@ -48,7 +48,7 @@ def ndcg_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k
 
     return results
 
-@register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs'], module='retrieval')
+@register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs', 'k'], module='retrieval')
 @handle_output()
 def mrr_score(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k: int) -> List[float]:
     validation.validate_batch_inputs(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
