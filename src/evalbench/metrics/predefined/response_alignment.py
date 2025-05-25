@@ -1,10 +1,11 @@
 from typing import List
 from evalbench.utils.helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
+from evalbench.utils.enum import RelevanceScore, AnswerHelpfulness
 
 @register_metric('answer_relevance', required_args=['query', 'response'], module='response_alignment')
 @handle_output()
-def answer_relevance_score(query: List[str], response: List[str]) -> List[float]:
+def answer_relevance_score(query: List[str], response: List[str]) -> List[str]:
     validation.validate_batch_inputs(('response', response), ('query', query))
 
     cfg = get_config()
@@ -19,7 +20,7 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
         2 = Weakly related, mostly off-topic  
         3 = Partially relevant, some connection  
         4 = Mostly relevant, minor issues  
-        5 = Fully relevant, directly answers the question
+        5 = Highly relevant
 
          Instructions:
         - Use the full 1–5 scale.
@@ -51,19 +52,19 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[float]
                 model='llama3-8b-8192',
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0,
-                max_tokens=1,
             )
             score = completion.choices[0].message.content.strip()
-            results.append(float(score))
-        except ValueError:
-            results.append(0)
+            label = RelevanceScore.from_score(float(score))
+            if label:
+                results.append(f"{float(score)} - {label.description}")
+        except ValueError as e:
+            results.append("Invalid score")
 
     return results
 
-
 @register_metric('answer_helpfulness', required_args=['query', 'response'], module='response_alignment')
 @handle_output()
-def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
+def helpfulness_score(query: List[str], response: List[str]) -> List[str]:
     validation.validate_batch_inputs(('response', response), ('query', query))
 
     cfg = get_config()
@@ -71,8 +72,15 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
 
     for q, r in zip(query, response):
         prompt = f'''
-            You are a helpful and fair evaluator. Your task is to assess the following response based on answer helpfulness using a numeric rating between 1 (poor) and 5 (excellent). Respond with only the number.
+            You are a helpful and fair evaluator. Your task is to assess the following response based on answer helpfulness using a numeric rating between 1 and 5. Respond with only the number.
 
+            Scoring Guidelines:
+            1 = Unhelpful or irrelevant
+            2 = Slightly helpful, mostly vague
+            3 = Somewhat helpful, partially answers
+            4 = Mostly helpful, minor issues
+            5 = Very helpful, clear and complete
+            
              Instructions:
             - Use the full scale (1 to 5) when evaluating.
             - Do not include any explanation—just return a single number.
@@ -104,8 +112,10 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[float]:
                 temperature=0.0,
             )
             score = completion.choices[0].message.content.strip()
-            results.append(float(score))
-        except ValueError:
-            results.append(0)
+            label = AnswerHelpfulness.from_score(float(score))
+            if label:
+                results.append(f"{float(score)} - {label.description}")
+        except ValueError as e:
+            results.append("Invalid score")
 
     return results

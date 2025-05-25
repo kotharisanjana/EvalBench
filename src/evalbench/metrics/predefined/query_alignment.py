@@ -1,10 +1,11 @@
 from typing import List
 from evalbench.utils.helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
+from evalbench.utils.enum import Relevance
 
 @register_metric('context_relevance', required_args=['query', 'context'], module='query_alignment')
 @handle_output()
-def context_relevance_score(query: List[str], context: List[str]) -> List[float]:
+def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
     validation.validate_batch_inputs(('context', context), ('query', query))
 
     cfg = get_config()
@@ -16,10 +17,10 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
 
         Scoring Guidelines:
         1 = Completely irrelevant  
-        2 = Slightly related  
-        3 = Somewhat relevant  
-        4 = Mostly relevant  
-        5 = Highly relevant and directly useful for answering the query
+        2 = Weakly related, mostly off-topic  
+        3 = Partially relevant, some connection  
+        4 = Mostly relevant, minor issues  
+        5 = Highly relevant 
 
         Instructions:
         - ONLY output the number 1–5. No extra text.
@@ -39,7 +40,6 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
         Score: 5
 
         Now rate the following:
-
         Query: {q}  
         Retrieved Context: {ctx}  
 
@@ -51,11 +51,12 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[float]
                 model='llama3-8b-8192',
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0,
-                max_tokens=1,
             )
             score = response.choices[0].message.content.strip()
-            results.append(float(score))
+            label = Relevance.from_score(float(score))
+            if label:
+                results.append(f"{float(score)} - {label.description}")
         except ValueError as e:
-            results.append(0)
+            results.append("Invalid score")
 
     return results

@@ -1,5 +1,5 @@
 import pytest
-import evalbench.metrics.predefined.query_alignment as query_alignment
+import evalbench.metrics.predefined.response_alignment as response_alignment
 
 @pytest.fixture
 def test_data():
@@ -17,8 +17,12 @@ def test_data():
             'Practice regularly and join a speaking group like Toastmasters.'
         ]
     }
+def test_answer_relevance(test_data):
+    score = response_alignment.answer_relevance_score(test_data['queries'], test_data['responses'])
+    assert all(isinstance(s, str) for s in score), \
+        f'Expected relevance scores to be string in [1, 5], but got {score}'
 
-def test_context_relevance(test_data):
-    score = query_alignment.context_relevance_score(test_data['queries'], test_data['contexts'])
+def test_helpfulness_score(test_data):
+    score = response_alignment.helpfulness_score(test_data['queries'], test_data['responses'])
     assert all(isinstance(s, str) for s in score), \
         f'Expected relevance scores to be string in [1, 5], but got {score}'
