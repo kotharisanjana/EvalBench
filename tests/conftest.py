@@ -1,8 +1,8 @@
 import pytest
 from dotenv import load_dotenv
 import os
-from utils.config import EvalConfig
-from utils.runtime import set_config
+from evalbench.utils.config import EvalConfig
+from evalbench.utils.runtime import set_config
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_environment():

@@ -1,6 +1,6 @@
 from typing import List
-from utils.helper import get_config, handle_output, register_metric
-import error_handling.validation_helpers as validation
+from evalbench.utils.helper import get_config, handle_output, register_metric
+import evalbench.error_handling.validation_helpers as validation
 
 def evaluate(response: str, metric_type: str) -> float:
     cfg = get_config()

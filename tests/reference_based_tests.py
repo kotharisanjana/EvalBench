@@ -1,5 +1,5 @@
 import pytest
-import metrics.predefined.reference_based as reference_based
+from evalbench import metrics as reference_based
 
 @pytest.fixture
 def test_data():

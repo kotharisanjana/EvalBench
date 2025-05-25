@@ -1,5 +1,5 @@
 from typing import List, Union, Tuple
-from error_handling.custom_error import MetricError, MetricErrorMessages
+from evalbench.error_handling.custom_error import MetricError, MetricErrorMessages
 
 def validate_num_args(*args: Tuple, length: int):
     if len(args[0]) != length:

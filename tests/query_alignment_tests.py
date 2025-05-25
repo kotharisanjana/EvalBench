@@ -1,5 +1,5 @@
 import pytest
-import metrics.predefined.query_alignment as query_alignment
+import evalbench.metrics.predefined.query_alignment as query_alignment
 
 @pytest.fixture
 def test_data():

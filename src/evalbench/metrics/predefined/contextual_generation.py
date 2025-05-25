@@ -1,11 +1,11 @@
 from typing import List
-from utils.helper import  get_config, handle_output, register_metric
-import error_handling.validation_helpers as validation
+from evalbench.utils.helper import  get_config, handle_output, register_metric
+import evalbench.error_handling.validation_helpers as validation
 
 @register_metric('faithfulness', required_args=['context', 'generated'], module='contextual_generation')
 @handle_output()
 def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(context, generated)
+    validation.validate_batch_inputs(('context', context), ('generated', generated))
 
     cfg = get_config()
     candidate_labels = ['faithful to context', 'unfaithful to context']
@@ -26,7 +26,7 @@ def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[f
 @register_metric('hallucination', required_args=['context', 'generated'], module='contextual_generation')
 @handle_output()
 def hallucination_score(context: List[List[str]], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(context, generated)
+    validation.validate_batch_inputs(('context', context), ('generated', generated))
 
     cfg = get_config()
     candidate_labels = ["entailment", "neutral", "contradiction"]
@@ -48,7 +48,7 @@ def hallucination_score(context: List[List[str]], generated: List[str]) -> List[
 @register_metric('groundedness', required_args=['context', 'generated'], module='contextual_generation')
 @handle_output()
 def groundedness_score(context: List[List[str]], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(context, generated)
+    validation.validate_batch_inputs(('context', context), ('generated', generated))
 
     cfg = get_config()
     results = []

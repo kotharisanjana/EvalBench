@@ -1,5 +1,5 @@
 import pytest
-import metrics.predefined.response_quality as response_quality
+import evalbench.metrics.predefined.response_quality as response_quality
 
 @pytest.fixture
 def test_data():

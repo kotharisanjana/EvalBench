@@ -1,5 +1,5 @@
 import pytest
-import metrics.predefined.contextual_generation as contextual_generation
+import evalbench.metrics.predefined.contextual_generation as contextual_generation
 
 @pytest.fixture
 def test_data():
