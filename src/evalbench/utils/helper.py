@@ -42,14 +42,14 @@ def _print_results(name, results, error_message=None):
 
     if all(isinstance(r, (float, int)) for r in results):
         for i, score in enumerate(results, 1):
-            print(f"Score {i}: {score:.3f}")
+            print(f"Score: {score:.3f}")
     elif all(isinstance(r, dict) for r in results):
         for i, res_dict in enumerate(results, 1):
             print(f"Item {i}:")
             for k, v in res_dict.items():
                 print(f"    {k}: {v:.3f}")
     else:
-        print("Results:", results)
+        print("Score:", results)
 
 def _save_results(name, result, error_message):
     cfg = get_config()
