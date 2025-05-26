@@ -5,7 +5,6 @@ import inspect
 import os
 from functools import wraps
 from typing import Callable, List
-import evalbench.utils.globals as glb
 from evalbench.utils.runtime import get_config
 import evalbench
 
@@ -81,7 +80,7 @@ def _save_results(name, result, error_message):
 # Decorator to register metrics with their required arguments
 def register_metric(name: str, required_args: List[str], module: str):
     def decorator(func: Callable):
-        glb.metric_registry[name] = {
+        evalbench.metric_registry[name] = {
             'func': func,
             'required_args': required_args,
             'module': module,
@@ -95,29 +94,29 @@ def expose_metrics(module):
         mod = importlib.import_module(f"evalbench.{module_path}")
         setattr(evalbench, public_name, mod)
         if hasattr(evalbench, "__all__"):
-            glb.__all__.append(public_name)
+            evalbench.__all__.append(public_name)
 
         for name, obj in inspect.getmembers(mod):
             if callable(obj) and not name.startswith("_"):
                 setattr(evalbench, name, obj)
                 if hasattr(evalbench, "__all__"):
-                    glb.__all__.append(name)
+                    evalbench.__all__.append(name)
 
 def expose_additional_helpers(helpers):
-    glb.__all__.extend(helpers)
+    evalbench.__all__.extend(helpers)
 
 # expose metrics module
 def expose_custom_metrics(module):
     name = module.__name__.split('.')[-1]
     setattr(evalbench, name, module)
     if hasattr(evalbench, "__all__"):
-        glb.__all__.append(name)
+        evalbench.__all__.append(name)
 
     for name, obj in inspect.getmembers(module):
         if callable(obj) and not name.startswith("_"):
             setattr(evalbench, name, obj)
             if hasattr(evalbench, "__all__"):
-                glb.__all__.append(name)
+                evalbench.__all__.append(name)
 
 # download NLTK data if not present
 def download_nltk_data():

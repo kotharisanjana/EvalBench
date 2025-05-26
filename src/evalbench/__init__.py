@@ -4,6 +4,9 @@ from evalbench.utils.helper import expose_metrics, expose_additional_helpers, re
 from evalbench.metrics.custom.custom_metrics import load_custom_metrics
 from evalbench.utils.runtime import set_config
 
+metric_registry = {}
+__all__ = []
+
 # metric modules and individual metrics
 module_names = {
     "response_quality": "metrics.predefined.response_quality",
