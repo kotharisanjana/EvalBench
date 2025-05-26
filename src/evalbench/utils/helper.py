@@ -1,10 +1,12 @@
 import nltk
 import json
+import importlib
+import inspect
 import os
 from functools import wraps
 from typing import Callable, List
-from evalbench.utils.registry import metric_registry
 from evalbench.utils.runtime import get_config
+import evalbench
 
 def handle_output():
     def decorator(func):
@@ -42,14 +44,14 @@ def _print_results(name, results, error_message=None):
 
     if all(isinstance(r, (float, int)) for r in results):
         for i, score in enumerate(results, 1):
-            print(f"Score {i}: {score:.3f}")
+            print(f"Score: {score:.3f}")
     elif all(isinstance(r, dict) for r in results):
         for i, res_dict in enumerate(results, 1):
             print(f"Item {i}:")
             for k, v in res_dict.items():
                 print(f"    {k}: {v:.3f}")
     else:
-        print("Results:", results)
+        print("Score:", results)
 
 def _save_results(name, result, error_message):
     cfg = get_config()
@@ -78,13 +80,43 @@ def _save_results(name, result, error_message):
 # Decorator to register metrics with their required arguments
 def register_metric(name: str, required_args: List[str], module: str):
     def decorator(func: Callable):
-        metric_registry[name] = {
+        evalbench.metric_registry[name] = {
             'func': func,
             'required_args': required_args,
             'module': module,
         }
         return func
     return decorator
+
+# expose predefined metrics for package usage
+def expose_metrics(module):
+    for public_name, module_path in module.items():
+        mod = importlib.import_module(f"evalbench.{module_path}")
+        setattr(evalbench, public_name, mod)
+        if hasattr(evalbench, "__all__"):
+            evalbench.__all__.append(public_name)
+
+        for name, obj in inspect.getmembers(mod):
+            if callable(obj) and not name.startswith("_"):
+                setattr(evalbench, name, obj)
+                if hasattr(evalbench, "__all__"):
+                    evalbench.__all__.append(name)
+
+def expose_additional_helpers(helpers):
+    evalbench.__all__.extend(helpers)
+
+# expose metrics module
+def expose_custom_metrics(module):
+    name = module.__name__.split('.')[-1]
+    setattr(evalbench, name, module)
+    if hasattr(evalbench, "__all__"):
+        evalbench.__all__.append(name)
+
+    for name, obj in inspect.getmembers(module):
+        if callable(obj) and not name.startswith("_"):
+            setattr(evalbench, name, obj)
+            if hasattr(evalbench, "__all__"):
+                evalbench.__all__.append(name)
 
 # download NLTK data if not present
 def download_nltk_data():

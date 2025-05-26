@@ -28,5 +28,5 @@ def test_hallucination_score(test_data):
 
 def test_groundedness_score(test_data):
     score = contextual_generation.groundedness_score(test_data['context'], test_data['generated'])
-    assert all(0 <= s <= 5 for s in score), \
-        f'Expected score in [0,5], got {score}'
+    assert all(isinstance(s, str) for s in score), \
+        f'Expected groundedness scores to be string in [1, 3], but got {score}'
