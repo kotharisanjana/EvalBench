@@ -1,6 +1,6 @@
 import os
 from evalbench.error_handling.custom_error import MetricError, MetricErrorMessages
-from evalbench.utils.registry import metric_registry
+import evalbench.utils.globals as glb
 from evalbench.metrics.custom.custom_metrics import load_custom_metrics
 
 def evaluate_module(module, custom_metric_path = None, **kwargs):
@@ -14,7 +14,7 @@ def evaluate_module(module, custom_metric_path = None, **kwargs):
             raise FileNotFoundError(f"Custom metric file not found: {custom_metric_path}")
 
     results = []
-    for name, metric in metric_registry.items():
+    for name, metric in glb.metric_registry.items():
         if metric.get('module') in module:
             required_args = metric['required_args']
             try:
