@@ -93,7 +93,7 @@ def groundedness_score(context: List[List[str]], generated: List[str]) -> List[s
 
         try:
             completion = cfg.groq_client.chat.completions.create(
-                model='llama3-8b-8192',
+                model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0
             )

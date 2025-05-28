@@ -42,7 +42,7 @@ def conciseness_score(response: List[str]) -> List[str]:
 
         try:
             completion = cfg.groq_client.chat.completions.create(
-                model='llama3-8b-8192',
+                model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0
             )
@@ -95,7 +95,7 @@ def coherence_score(response: List[str]) -> List[str]:
 
         try:
             completion = cfg.groq_client.chat.completions.create(
-                model='llama3-8b-8192',
+                model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0
             )
