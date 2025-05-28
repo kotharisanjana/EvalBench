@@ -3,15 +3,9 @@ import evalbench
 from evalbench.error_handling.custom_error import MetricError, MetricErrorMessages
 from evalbench.metrics.custom.custom_metrics import load_custom_metrics
 
-def evaluate_module(module, custom_metric_path = None, **kwargs):
+def evaluate_module(module, **kwargs):
     if not module:
         raise MetricError(MetricErrorMessages.MISSING_REQUIRED_PARAM, param='module')
-
-    if custom_metric_path:
-        if os.path.exists(custom_metric_path):
-            load_custom_metrics(custom_metric_path)
-        else:
-            raise FileNotFoundError(f"Custom metric file not found: {custom_metric_path}")
 
     results = []
     for name, metric in evalbench.metric_registry.items():

@@ -14,7 +14,7 @@ class EvalConfig:
         sentence_model='sentence-transformers/all-MiniLM-L6-v2',
         fact_check_model='facebook/bart-large-mnli',
         llm = 'llama3-8b-8192',
-        output_mode='print',
+        output_mode='print', # print or save
         output_filepath='evaluation_results.json',
     ):
         self.groq_api_key = groq_api_key or os.getenv('GROQ_API_KEY')
