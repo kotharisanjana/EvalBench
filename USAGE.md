@@ -22,6 +22,10 @@ response = ["A binary search algorithm reduces the time complexity to O(log n)."
 context = [["Binary search works on sorted arrays and is faster than linear search."]]
 
 eb.faithfulness_score(context=context, generated=response)
+
+# metrics can also be printed as a list
+result = eb.faithfulness_score(context=context, generated=response)
+print(result) # [0.44]
 ```
 
 #### 2. Evaluate all metrics in a predefined module
