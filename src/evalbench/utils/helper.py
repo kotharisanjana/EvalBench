@@ -5,7 +5,7 @@ import inspect
 import os
 from functools import wraps
 from typing import Callable, List
-from evalbench.utils.runtime import get_config
+from evalbench.runtime_setup.runtime import get_config
 import evalbench
 
 def handle_output():
@@ -55,11 +55,11 @@ def _print_results(name, results, error_message=None):
 
 def _save_results(name, result, error_message):
     cfg = get_config()
-    directory = os.path.dirname(cfg.json_filepath)
+    directory = os.path.dirname(cfg.output_filepath)
     if directory and not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
-    if os.path.exists(cfg.json_filepath):
-        with open(cfg.json_filepath, 'r') as f:
+    if os.path.exists(cfg.output_filepath):
+        with open(cfg.output_filepath, 'r') as f:
             data = json.load(f)
     else:
         data = []
@@ -74,7 +74,7 @@ def _save_results(name, result, error_message):
 
     data.append(entry)
 
-    with open(cfg.json_filepath, 'w') as f:
+    with open(cfg.output_filepath, 'w') as f:
         json.dump(data, f, indent=4)
 
 # Decorator to register metrics with their required arguments

@@ -1,8 +1,8 @@
-from evalbench.utils.config import EvalConfig
+from evalbench.runtime_setup.config import EvalConfig
 from evalbench.metrics.evaluate_module import evaluate_module
 from evalbench.utils.helper import expose_metrics, expose_additional_helpers, register_metric, handle_output
 from evalbench.metrics.custom.custom_metrics import load_custom_metrics
-from evalbench.utils.runtime import set_config
+from evalbench.runtime_setup.runtime import set_config
 
 metric_registry = {}
 __all__ = []

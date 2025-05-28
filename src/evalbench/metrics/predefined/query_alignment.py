@@ -48,7 +48,7 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
 
         try:
             response = cfg.groq_client.chat.completions.create(
-                model='llama3-8b-8192',
+                model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=0.0,
             )
