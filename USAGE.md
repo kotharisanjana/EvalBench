@@ -4,62 +4,64 @@ EvalBench is a flexible evaluation framework for LLM applications, offering pred
 
 ---
 
-## Setup
-
 ### Initialize Configuration
 
 ```python
 import evalbench as eb
 
 # Create and apply evaluation configuration
-config = eb.EvalConfig(groq_api_key='', output_mode='print')
+config = eb.EvalConfig(groq_api_key="", output_mode="print")
 eb.set_config(config)
+```
 
+### Usage Examples
+#### 1. Evaluate a single predefined metric
 
-Usage Examples
-1. Evaluate a single predefined metric directly
-
-import evalbench as eb
-
-response = [["It is raining in Atlanta."]]
-context = ["It is hot in Atlanta"]
+```python
+response = ["A binary search algorithm reduces the time complexity to O(log n)."]
+context = [["Binary search works on sorted arrays and is faster than linear search."]]
 
 eb.faithfulness_score(context=context, generated=response)
+```
 
-2. Evaluate all metrics in a predefined module
+#### 2. Evaluate all metrics in a predefined module
 
+```python
 eb.evaluate_module(
-    module=['contextual_generation'],
+    module=["contextual_generation"],
     context=context,
     generated=response,
 )
+```
 
-3. Register a Custom Metric
-Create a custom metric in a file custom.py:
+#### 3. Register custom metrics
+Create a custom metric in a file (eg. custom.py):
 
+```python
 from evalbench import register_metric, handle_output
 
-@register_metric(name="len_metric", module="custom", required_args=['response', 'reference'])
+@register_metric(name="len_metric", module="custom", required_args=["response", "reference"])
 @handle_output()
 def my_custom_metric(response, reference):
     return [len(response) / len(reference)]
+```
 
-4. Load custom metric file and evaluate
+#### 4. Load custom metric file and evaluate
 
-e.load_custom_metrics('custom.py')
+```python
+eb.load_custom_metrics("custom.py")
 
-response = ["It is a rainy and stormy day in Atlanta"]
-reference = [["It is hot in Atlanta"], ["It is amazing!"]]
+response = ["A binary search algorithm reduces the time complexity to O(log n).", "The Eiffel Tower is located in Berlin and was built in the 1800s."]
+reference = ["Binary search works on sorted arrays and is faster than linear search.", "In Python, a generator yields items one at a time using the 'yield' keyword."]
 
 # Evaluate custom metric directly
-e.my_custom_metric(response, reference)
+eb.my_custom_metric(response, reference)
 
 # Evaluate all metrics in the 'custom' module
-results = e.evaluate_module(
-    module=['custom'],
+eb.evaluate_module(
+    module=["custom"],
     response=response,
     reference=reference,
 )
-print(results)
-
+```
 
