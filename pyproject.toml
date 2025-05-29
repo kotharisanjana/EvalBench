@@ -19,8 +19,8 @@ dependencies = [
     "sentence-transformers",
     "groq",
     "dotenv",
-    "rouge_score",
-    "bert_score"
+    "rouge-score",
+    "bert-score"
 ]
 
 [project.optional-dependencies]
