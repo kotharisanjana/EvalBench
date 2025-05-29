@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evalbench"
-version = "0.1.2"
+version = "0.1.3"
 description = "A collection of evaluation metrics for LLM tasks"
 authors = [
     { name="kotharisanjana", email="sanjanak98@gmail.com" }
@@ -19,6 +19,8 @@ dependencies = [
     "sentence-transformers",
     "groq",
     "dotenv",
+    "rouge_score",
+    "bert_score"
 ]
 
 [project.optional-dependencies]
