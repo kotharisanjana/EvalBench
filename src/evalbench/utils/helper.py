@@ -4,7 +4,7 @@ import importlib
 import inspect
 import os
 from functools import wraps
-from typing import Callable, List
+from typing import Callable, List, Any
 from evalbench.runtime_setup.runtime import get_config
 import evalbench
 
@@ -78,11 +78,12 @@ def _save_results(name, result, error_message):
         json.dump(data, f, indent=4)
 
 # Decorator to register metrics with their required arguments
-def register_metric(name: str, required_args: List[str], module: str):
+def register_metric(name: str, required_args: List[str], arg_types: List[Any], module: str):
     def decorator(func: Callable):
         evalbench.metric_registry[name] = {
             'func': func,
             'required_args': required_args,
+            'arg_types': arg_types,
             'module': module,
         }
         return func

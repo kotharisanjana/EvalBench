@@ -3,7 +3,12 @@ from evalbench.utils.helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Relevance, AnswerHelpfulness
 
-@register_metric('answer_relevance', required_args=['query', 'response'], module='response_alignment')
+@register_metric(
+    'answer_relevance',
+    required_args=['query', 'response'],
+    arg_types=[List[str], List[str]],
+    module='response_alignment'
+)
 @handle_output()
 def answer_relevance_score(query: List[str], response: List[str]) -> List[str]:
     validation.validate_batch_inputs(('response', response), ('query', query))
@@ -62,7 +67,12 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[str]:
 
     return results
 
-@register_metric('answer_helpfulness', required_args=['query', 'response'], module='response_alignment')
+@register_metric(
+    'answer_helpfulness',
+    required_args=['query', 'response'],
+    arg_types=[List[str], List[str]],
+    module='response_alignment'
+)
 @handle_output()
 def helpfulness_score(query: List[str], response: List[str]) -> List[str]:
     validation.validate_batch_inputs(('response', response), ('query', query))

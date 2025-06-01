@@ -3,7 +3,12 @@ from evalbench.utils.helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Relevance
 
-@register_metric('context_relevance', required_args=['query', 'context'], module='query_alignment')
+@register_metric(
+    'context_relevance',
+    required_args=['query', 'context'],
+    arg_types=[List[str], List[str]],
+    module='query_alignment'
+)
 @handle_output()
 def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
     validation.validate_batch_inputs(('context', context), ('query', query))
