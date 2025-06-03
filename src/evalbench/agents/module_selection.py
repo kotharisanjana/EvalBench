@@ -1,10 +1,10 @@
 from typing import List
 from evalbench.runtime_setup.runtime import get_config
 
-class ModuleSelector:
-    def __init__(self, request):
+class ModuleSelection:
+    def __init__(self, parsed_request):
         self.cfg = get_config()
-        self.request = request
+        self.parsed_request = parsed_request
         self.available_metrics = list(self.cfg.metric_registry.keys())
         self.validated_metrics = []
         self.prepared_metric_inputs = {}
@@ -56,7 +56,7 @@ class ModuleSelector:
         {few_shot_examples}
 
         User query:
-        '''{self.request['goal']}'''
+        '''{self.parsed_request['goal']}'''
         """
 
         response = self.cfg.groq_client.chat.completions.create(
@@ -96,7 +96,7 @@ class ModuleSelector:
         return [str(raw_type)]
 
     def prepare_metric_inputs(self):
-        input_data = self.request.get("data", {}).get("input_data", {})
+        input_data = self.parsed_request.get("data", {}).get("input_data", {})
 
         for metric in self.validated_metrics:
             metric_info = self.cfg.metric_registry.get(metric)

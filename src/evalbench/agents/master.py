@@ -1,42 +1,53 @@
 import re
 import json
 from collections import defaultdict
+from evalbench.agents.interpretation import Interpretation
+from evalbench.agents.module_selection import ModuleSelection
+from evalbench.agents.recommendation import Recommendation
 from evalbench.runtime_setup.runtime import get_config
 
 class Master:
-    def __init__(self, module_selector_agent, interpretation_agent, recommendation_agent):
-        self.module_selector_agent = module_selector_agent
-        self.interpretation_agent = interpretation_agent
-        self.recommendation_agent = recommendation_agent
+    def __init__(self):
+        self.recommendation_agent = None
+        self.interpretation_agent = None
+        self.module_selector_agent = None
         self.cfg = get_config()
+        self.parsed_request = {}
 
     def handle_user_request(self, user_input):
         user_intent = self.classify_intent(user_input)
         user_input_data = self.extract_data(user_input)
-        parsed_request = {
+        self.parsed_request = {
             'goal': user_intent,
             'data': user_input_data
         }
 
-        if user_intent == 'full_evaluation':
-            eval_results = self.module_selector_agent.execute(parsed_request)
+    def create_sub_agents(self):
+        self.module_selector_agent = ModuleSelection(self.parsed_request)
+        self.interpretation_agent = Interpretation(self.parsed_request)
+        self.recommendation_agent = Recommendation()
+
+    def execute(self):
+        goal = self.parsed_request['goal']
+        if goal == 'full_evaluation':
+            eval_results = self.module_selector_agent.execute()
             interpretation = self.interpretation_agent.interpret(eval_results)
-            recommendations = self.recommendation_agent.generate_recommendations(parsed_request, eval_results, interpretation)
+            recommendations = self.recommendation_agent.generate_recommendations(self.parsed_request, eval_results, interpretation)
             final_report = {
                 'interpretation': interpretation,
                 'recommendations': recommendations,
                 'eval_results': eval_results
             }
             return final_report
-        elif parsed_request['interpretation_only']:
-            return self.interpretation_agent.interpret(parsed_request)
-        elif parsed_request['recommendation_only']:
-            return self.recommendation_agent.generate_recommendations(parsed_request)
-        elif parsed_request['interpretation and recommendation']:
-            interpretation = self.interpretation_agent.interpret(parsed_request)
-            return self.recommendation_agent.generate_recommendations(parsed_request, interpretation)
+        elif goal == 'interpretation_only':
+            return self.interpretation_agent.interpret(self.parsed_request)
+        elif goal == 'recommendation_only':
+            return self.recommendation_agent.generate_recommendations(self.parsed_request)
+        elif goal == 'interpretation and recommendation':
+            interpretation = self.interpretation_agent.interpret(self.parsed_request)
+            return self.recommendation_agent.generate_recommendations(self.parsed_request, interpretation)
         else:
-            raise ValueError('Sorry, I couldn’t understand your request or missing required inputs.')
+            raise ValueError('Sorry, I couldn’t understand your request')
 
     # make confident decisions so downstream processes are deterministic and manageable
     def classify_intent(self, user_input):
@@ -106,10 +117,18 @@ class Master:
                             'eval_results': input_data
                         }
 
-            except json.JSONDecodeError:
-                continue
+                # there can also be a scenario where the user provides both input_data and eval_results
 
-        raise ValueError('Unable to extract valid input data. Please ensure your input is in the correct JSON format with required fields.')
+                else:
+                    raise ValueError('Missing input data / Unable to extract valid input data. Please ensure your input is in the correct JSON format with required fields.')
+
+            except json.JSONDecodeError:
+                break
+
+        return {
+            'input_data': None,
+            'eval_results': None
+        }
 
 
 

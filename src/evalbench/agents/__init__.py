@@ -18,10 +18,16 @@
 # Executes the module and returns results.
 
 # 3. Interpretation Agent
-# Takes in metric results + task context.
+# Takes in metric results
 # Produces natural language explanation of what the results mean.
 # Flags contradictions, metric tradeoffs, or uncertainties.
 
 # 4. Recommendation Agent
 # Takes original data + eval results + interpretation.
 # Suggests how to improve performance.
+
+
+# entry point
+# input data validations in every agent
+# memory
+# test
