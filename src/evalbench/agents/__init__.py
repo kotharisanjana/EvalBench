@@ -6,7 +6,6 @@
 #         ↓
 #      Final Report
 
-
 # 1. Master Agent (Supervisor / Orchestrator)
 # Accepts natural language queries.
 # Maintains conversational state/ autonomous clarification/ iterative reasoning or planning/ memory (future enhancements)

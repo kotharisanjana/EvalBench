@@ -17,6 +17,7 @@ class Master:
         task = helper.get_task(instruction, data) # to assist in interpretation and recommendation
         input_data = helper.parse_data(data) # parse data in the required form for downstream tasks
         self.request = {
+            'instruction': instruction,
             'intent': intent,
             'task': task,
             'data': input_data,
@@ -30,28 +31,32 @@ class Master:
         self.recommendation_agent = Recommendation(self.request)
 
     def execute(self):
+        results = None
+        interpretation = None
+        recommendations = None
+
         intent = self.request['intent']
         if intent == 'full_evaluation':
             results = self.module_selector_agent.execute()
             interpretation = self.interpretation_agent.interpret(results)
             recommendations = self.recommendation_agent.recommend(results, interpretation)
-            final_report = {
-                'results': results,
-                'interpretation': interpretation,
-                'recommendations': recommendations,
-            }
-            return final_report
         elif intent == 'interpretation_only':
-            return self.interpretation_agent.interpret()
+            interpretation = self.interpretation_agent.interpret()
         elif intent == 'recommendation_only':
-            return self.recommendation_agent.recommend()
+            recommendations = self.recommendation_agent.recommend()
         elif intent == 'interpretation and recommendation':
             interpretation = self.interpretation_agent.interpret()
             recommendations = self.recommendation_agent.recommend(interpretation)
-            final_report = {
-                'interpretation': interpretation,
-                'recommendations': recommendations,
-            }
-            return final_report
         else:
             raise ValueError('Sorry, I couldn’t understand your request')
+
+        report_data = {
+            'instruction': self.request['instruction'],
+            'task': self.request['task'],
+            'results': self.request['results'] if self.request['results'] else results,
+            'interpretation': self.request['interpretation'] if self.request['interpretation'] else interpretation,
+            'recommendations': recommendations
+        }
+        report = helper.generate_report(report_data)
+
+        return report
