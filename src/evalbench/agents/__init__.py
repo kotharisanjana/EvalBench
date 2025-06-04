@@ -25,9 +25,3 @@
 # 4. Recommendation Agent
 # Takes original data + eval results + interpretation.
 # Suggests how to improve performance.
-
-
-# entry point
-# input data validations in every agent
-# memory
-# test
