@@ -15,7 +15,7 @@ class Recommendation:
         - The evaluation metric results
         - An optional interpretation of those results
 
-        Your goal is to suggest **2–3 specific and actionable recommendations** to improve model performance. 
+        Your goal is to suggest 2–3 specific and actionable recommendations to improve model performance. 
         Tailor your suggestions based on the task type if provided. Use the interpretation (if present) to avoid restating analysis and focus only on what should be done next.
         Respond with your recommendations in a concise numbered list.
 
@@ -89,7 +89,7 @@ class Recommendation:
                 model=self.cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
             )
-            recommendation = response.choices[0].message['content'].strip()
+            recommendation = response.choices[0].message.content.strip().replace('*', '')
         except Exception as e:
             recommendation = None
 

@@ -2,12 +2,12 @@ import re
 import json
 from typing import List
 from collections import defaultdict
+import evalbench
 from evalbench.runtime_setup.runtime import get_config
-
-cfg = get_config()
 
 # make confident decisions so downstream processes are deterministic and manageable
 def get_user_intent(instruction):
+    cfg = get_config()
     try:
         prompt = f'''
         You are an intent classification assistant.
@@ -40,19 +40,21 @@ def get_user_intent(instruction):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=0,
         )
-        intent = response.choices[0].message['content'].strip()
+        intent = response.choices[0].message.content.strip()
     except Exception as e:
         intent = None
 
     return intent
 
 def get_task(instruction, data):
+    cfg = get_config()
     try:
         prompt = f'''
         You are a task identification assistant.
 
-        Your job is to understand what kind of language task the user is performing, based on their instruction and data. Output a short, descriptive phrase that best captures the nature of the task (e.g., 'summarization', 'retrieval-based question answering', 'chatbot response generation', 'information extraction').
-
+        Your job is to understand what kind of language task the user is performing, based on their instruction and data. 
+        Output a short, descriptive phrase that best captures the nature of the task (e.g., 'summarization', 'retrieval-based question answering', 'chatbot response generation', 'information extraction').
+        Focus only on the NLP task aspect, not the recommendation.
         Be concise. Use only one phrase. Avoid generic labels like 'NLP task'.
 
         User Instruction:
@@ -61,20 +63,21 @@ def get_task(instruction, data):
         Input Data (if any):
         \'\'\'{data if data else 'N/A'}\'\'\'
         '''
-
         response = cfg.groq_client.chat.completions.create(
             model=cfg.llm,
             messages=[{'role': 'user', 'content': prompt}],
-            temperature=5,
+            temperature=1,
         )
-        task = response.choices[0].message['content'].strip()
+        task = response.choices[0].message.content.strip()
     except Exception as e:
         task = None
 
     return task
 
-
 def parse_data(data):
+    if isinstance(data, (dict, list)):
+        data = json.dumps(data)
+
     json_candidates = re.findall(r'(\{.*?}|\[.*?])', data, re.DOTALL)
 
     for blob in json_candidates:
@@ -131,58 +134,59 @@ def convert_type(raw_type, expected_type):
     return [str(raw_type)]
 
 def prepare_metric_inputs(validated_metrics, data):
-    prepared_metric_inputs = {}
+    metric_inputs_map = {}
+
     for metric in validated_metrics:
-        metric_info = cfg.metric_registry.get(metric)
+        metric_info = evalbench.metric_registry.get(metric)
         if not metric_info:
             continue
 
         required_args = metric_info.get('required_args', [])
         arg_types = metric_info.get('arg_types', [])
 
-        metric_inputs = {}
-        for arg_name, expected_type in zip(required_args, arg_types):
-            raw_value = data.get(arg_name)
-            if raw_value is None:
-                raise ValueError(f'Missing required input \'{arg_name}\' for metric \'{metric}\'')
+        if all(k in data for k in required_args):
+            metric_inputs = {}
+            for arg_name, expected_type in zip(required_args, arg_types):
+                raw_value = data.get(arg_name)
 
-            converted_value = convert_type(raw_value, expected_type)
-            metric_inputs[arg_name] = converted_value
+                converted_value = convert_type(raw_value, expected_type)
+                metric_inputs[arg_name] = converted_value
 
-        prepared_metric_inputs[metric] = metric_inputs
+            metric_inputs_map[metric] = metric_inputs
 
-    return prepare_metric_inputs
+    return metric_inputs_map
 
 def generate_report(request):
-    instruction = request.get('instruction')
-    task = request.get('task', 'Unknown')
-    results = request.get('results')
-    interpretation = request.get('interpretation')
-    recommendations = request.get('recommendations')
+    instruction = request.get('instruction', 'N/A').strip()
+    task = request.get('task', 'Unknown').strip()
+    results = request.get('results', {})
+    interpretation = request.get('interpretation', '').strip()
+    recommendations = request.get('recommendations', '').strip()
 
-    report = f'''
-    # LLM Evaluation Report
-    
-    ## Instruction
-    {instruction}
-    
-    ## Inferred Task
-    **{task}**
-    '''
+    report = ["---", "LLM Evaluation Report\n", f"Instruction:\n{instruction}\n", f"Inferred Task:\n{task}\n"]
 
     if results:
-        report += '## Evaluation Results\n'
+        report.append("Evaluation Results:")
         for metric, score in results.items():
-            report += f'- **{metric}**: {score}\n'
-        report += '\n'
+            if isinstance(score, list) and len(score) == 1:
+                score_str = score[0]
+            else:
+                score_str = str(score)
+            report.append(f"- {metric}: {score_str}")
+        report.append("")  # spacing
 
     if interpretation:
-        report += f'## Interpretation\n{interpretation.strip()}\n\n'
+        report.append("Interpretation:")
+        report.append(interpretation)
+        report.append("")
 
     if recommendations:
-        report += f'## Recommendations\n{recommendations.strip()}\n\n'
+        report.append("Recommendations:")
+        report.append(recommendations)
+        report.append("")
 
-    report += '---\n_This report was automatically generated by EvalBench._'
+    report.append("---")
+    report.append("This report was automatically generated by EvalBench.")
 
-    return report
+    return "\n".join(report)
 

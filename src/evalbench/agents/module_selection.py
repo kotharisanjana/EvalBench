@@ -1,3 +1,5 @@
+import ast
+import evalbench
 from evalbench.runtime_setup.runtime import get_config
 from evalbench.utils.agent_helper import prepare_metric_inputs
 
@@ -5,7 +7,7 @@ class ModuleSelection:
     def __init__(self, parsed_request):
         self.cfg = get_config()
         self.parsed_request = parsed_request
-        self.available_metrics = list(self.cfg.metric_registry.keys())
+        self.available_metrics = list(evalbench.metric_registry.keys())
         self.validated_metrics = []
 
     def determine_evaluation_metrics(self):
@@ -57,7 +59,7 @@ class ModuleSelection:
         {few_shot_examples}
 
         User query:
-        \'\'\'{self.parsed_request['goal']}\'\'\'
+        \'\'\'{self.parsed_request['instruction']}\'\'\'
         '''
 
         response = self.cfg.groq_client.chat.completions.create(
@@ -67,7 +69,8 @@ class ModuleSelection:
         )
 
         try:
-            requested_metrics = eval(response.choices[0].message.content.strip())
+            requested_metrics = response.choices[0].message.content.strip()
+            requested_metrics = ast.literal_eval(requested_metrics)
         except Exception as e:
             requested_metrics = []
 
@@ -75,17 +78,14 @@ class ModuleSelection:
 
     def execute(self):
         self.determine_evaluation_metrics()
-        prepared_metric_inputs = prepare_metric_inputs(self.validated_metrics, self.parsed_request['data'])
+        metric_inputs_map = prepare_metric_inputs(self.validated_metrics, self.parsed_request['data'])
 
         results = {}
 
-        for metric in self.validated_metrics:
-            metric_info = self.cfg.metric_registry.get(metric)
-            if not metric_info:
-                continue
-
+        for metric, inputs in metric_inputs_map.items():
+            metric_info = evalbench.metric_registry.get(metric)
             func = metric_info.get('func')
-            inputs = prepared_metric_inputs.get(metric)
+
             try:
                 result = func(**inputs)
                 results[metric] = result

@@ -21,6 +21,7 @@ class Interpretation:
         - If results suggest a strength (e.g. high coherence), say what that means functionally.
         - If results suggest a weakness (e.g. low factuality or MRR), suggest **why that may matter** in practice.
         - Keep the tone analytical and actionable. Do **not** just restate the scores.
+        - Do not include any recommendations or next steps; focus **only on interpretation**.
         
         Here are some examples:
         Example 1:
@@ -72,7 +73,7 @@ class Interpretation:
                 model=self.cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
             )
-            interpretation = response.choices[0].message['content'].strip()
+            interpretation = response.choices[0].message.content.strip()
         except Exception as e:
             interpretation = None
 
