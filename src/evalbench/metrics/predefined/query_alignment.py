@@ -1,9 +1,14 @@
 from typing import List
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Relevance
 
-@register_metric('context_relevance', required_args=['query', 'context'], module='query_alignment')
+@register_metric(
+    'context_relevance',
+    required_args=['query', 'context'],
+    arg_types=[List[str], List[str]],
+    module='query_alignment'
+)
 @handle_output()
 def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
     validation.validate_batch_inputs(('context', context), ('query', query))
@@ -50,7 +55,7 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
             response = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0,
+                temperature=0,
             )
             score = response.choices[0].message.content.strip()
             label = Relevance.from_score(float(score))

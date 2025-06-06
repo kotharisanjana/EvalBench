@@ -1,9 +1,14 @@
 import numpy as np
 from typing import List
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 
-@register_metric('recall@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], module='retrieval')
+@register_metric(
+    'recall@k',
+    required_args=['relevant_docs', 'retrieved_docs', 'k'],
+    arg_types=[List[List[str]], List[List[str]], int],
+    module='retrieval'
+)
 @handle_output()
 def recall_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k: int) -> List[float]:
     validation.validate_batch_inputs(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -14,7 +19,12 @@ def recall_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]],
         for retrieved, relevant in zip(retrieved_docs, relevant_docs)
     ]
 
-@register_metric('precision@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], module='retrieval')
+@register_metric(
+    'precision@k',
+    required_args=['relevant_docs', 'retrieved_docs', 'k'],
+    arg_types=[List[List[str]], List[List[str]], int],
+    module='retrieval'
+)
 @handle_output()
 def precision_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k: int) -> List[float]:
     validation.validate_batch_inputs(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -31,7 +41,12 @@ def dcg(relevance_scores: list) -> int:
         for idx, rel in enumerate(relevance_scores)
     ])
 
-@register_metric('rndcg@k', required_args=['relevant_docs', 'retrieved_docs', 'k'], module='retrieval')
+@register_metric(
+    'ndcg@k',
+    required_args=['relevant_docs', 'retrieved_docs', 'k'],
+    arg_types=[List[List[str]], List[List[str]], int],
+    module='retrieval'
+)
 @handle_output()
 def ndcg_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k: int) -> List[float]:
     validation.validate_batch_inputs(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))
@@ -48,7 +63,12 @@ def ndcg_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k
 
     return results
 
-@register_metric('mrr', required_args=['retrieved_docs', 'relevant_docs', 'k'], module='retrieval')
+@register_metric(
+    'mrr',
+    required_args=['retrieved_docs', 'relevant_docs', 'k'],
+    arg_types=[List[List[str]], List[List[str]], int],
+    module='retrieval'
+)
 @handle_output()
 def mrr_score(relevant_docs: List[List[str]], retrieved_docs: List[List[str]], k: int) -> List[float]:
     validation.validate_batch_inputs(('relevant_docs', relevant_docs), ('retrieved_docs', retrieved_docs))

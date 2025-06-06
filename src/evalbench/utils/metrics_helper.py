@@ -4,7 +4,7 @@ import importlib
 import inspect
 import os
 from functools import wraps
-from typing import Callable, List
+from typing import Callable, List, Any
 from evalbench.runtime_setup.runtime import get_config
 import evalbench
 
@@ -78,11 +78,12 @@ def _save_results(name, result, error_message):
         json.dump(data, f, indent=4)
 
 # Decorator to register metrics with their required arguments
-def register_metric(name: str, required_args: List[str], module: str):
+def register_metric(name: str, required_args: List[str], arg_types: List[Any], module: str):
     def decorator(func: Callable):
-        evalbench.metric_registry[name] = {
+        evalbench.metric_registry[name+"_score"] = {
             'func': func,
             'required_args': required_args,
+            'arg_types': arg_types,
             'module': module,
         }
         return func
@@ -123,11 +124,9 @@ def download_nltk_data():
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
-        print("Downloading NLTK punkt...")
         nltk.download('punkt')
 
     try:
         nltk.data.find('corpora/wordnet')
     except LookupError:
-        print("Downloading NLTK wordnet...")
         nltk.download('wordnet')

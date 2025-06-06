@@ -1,9 +1,14 @@
 from typing import List
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Coherence, Conciseness
 
-@register_metric('conciseness', required_args=['response'], module='response_quality')
+@register_metric(
+    'conciseness',
+    required_args=['response'],
+    arg_types=[List[str]],
+    module='response_quality'
+)
 @handle_output()
 def conciseness_score(response: List[str]) -> List[str]:
     validation.validate_type_list_non_empty(('response', response))
@@ -44,7 +49,7 @@ def conciseness_score(response: List[str]) -> List[str]:
             completion = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0
+                temperature=0,
             )
             score = completion.choices[0].message.content
             label = Conciseness.from_score(float(score))
@@ -55,7 +60,12 @@ def conciseness_score(response: List[str]) -> List[str]:
 
     return results
 
-@register_metric('coherence', required_args=['response'], module='response_quality')
+@register_metric(
+    'coherence',
+    required_args=['response'],
+    arg_types=[List[str]],
+    module='response_quality'
+)
 @handle_output()
 def coherence_score(response: List[str]) -> List[str]:
     validation.validate_type_list_non_empty(('response', response))
@@ -97,7 +107,7 @@ def coherence_score(response: List[str]) -> List[str]:
             completion = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0
+                temperature=0,
             )
             score = completion.choices[0].message.content
             label = Coherence.from_score(float(score))
@@ -108,7 +118,12 @@ def coherence_score(response: List[str]) -> List[str]:
 
     return results
 
-@register_metric('factuality', required_args=['response'], module='response_quality')
+@register_metric(
+    'factuality',
+    required_args=['response'],
+    arg_types=[List[str]],
+    module='response_quality'
+)
 @handle_output()
 def factuality_score(response: List[str]) -> List[float]:
     validation.validate_type_list_non_empty(('response', response))
