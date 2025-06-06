@@ -9,18 +9,14 @@ class Recommendation:
         prompt = f'''
         You are a language evaluation recommendation assistant.
         Your job is to analyze evaluation results and offer concrete, actionable suggestions to improve the model or system under evaluation.
-
-        You will be given:
-        - The task the user performed (if known)
-        - The evaluation metric results
-        - An optional interpretation of those results
-
-        Your goal is to suggest 2–3 specific and actionable recommendations to improve model performance. 
-        Tailor your suggestions based on the task type if provided. Use the interpretation (if present) to avoid restating analysis and focus only on what should be done next.
-        Respond with your recommendations in a concise numbered list.
-
-        ---
-
+        
+        Guidelines:
+        - Your goal is to suggest 2–3 specific and actionable recommendations to improve model performance. 
+        - Tailor your suggestions based on the task type if provided. Use the interpretation (if present) to avoid restating analysis and focus only on what should be done next.
+        - Respond with your recommendations in a concise numbered list.
+        - Provide clear, practical steps that can be taken to address the issues identified in the results.
+        - Respond ONLY with a numbered list of 2–3 actionable recommendations. Do NOT restate analysis or include explanations.
+        
         Example 1:
         Task: summarization  
         Metric Results:
@@ -31,14 +27,11 @@ class Recommendation:
         }}  
         Interpretation:
         The summaries are semantically relevant but diverge from reference phrasing. Lexical overlap is low.
-
         Recommendations:
         1. Fine-tune the summarization model on a domain-specific corpus to increase overlap with references.
         2. Introduce constraints or templates to guide phrasing in a more reference-aligned way.
         3. Evaluate with newer semantic metrics (e.g., QuestEval) to better optimize for meaning preservation.
-
-        ---
-
+        
         Example 2:
         Task: retrieval  
         Metric Results:
@@ -49,14 +42,11 @@ class Recommendation:
         }}  
         Interpretation:
         High recall but low precision and ranking quality. Many irrelevant documents retrieved, and relevant ones often ranked low.
-
         Recommendations:
         1. Improve document reranking with a cross-encoder or hybrid retrieval model.
         2. Apply post-retrieval filtering using answer relevance or passage entailment.
         3. Retrain embedding models with hard negatives to better separate relevant/irrelevant content.
-
-        ---
-
+        
         Example 3:
         Task: chatbot  
         Metric Results:
@@ -67,16 +57,12 @@ class Recommendation:
         }}  
         Interpretation:
         Responses are coherent and factual but only moderately helpful.
-
         Recommendations:
         1. Improve intent detection or user need classification to better tailor responses.
         2. Fine-tune on helpfulness-labeled datasets (e.g., Helpful/Harmless, OpenAssistant).
         3. Add retrieval augmentation for grounding responses in task-specific knowledge.
-
-        ---
-
+        
         Now make recommendations for the following:
-
         Task: {self.parsed_request['task'] if self.parsed_request['task'] else 'Unknown'}  
         Metric Results:  
         {results if results else self.parsed_request['results']}  
@@ -88,8 +74,9 @@ class Recommendation:
             response = self.cfg.groq_client.chat.completions.create(
                 model=self.cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
+                temperature=1,
             )
-            recommendation = response.choices[0].message.content.strip().replace('*', '')
+            recommendation = response.choices[0].message.content.strip()
         except Exception as e:
             recommendation = None
 

@@ -30,16 +30,19 @@ class Master:
         self.interpretation_agent = Interpretation(self.request)
         self.recommendation_agent = Recommendation(self.request)
 
-    def execute(self):
+     def execute(self):
         results = None
         interpretation = None
         recommendations = None
 
         intent = self.request['intent']
-        if intent == 'full_evaluation':
+        print("intent = ", intent)
+        if intent == 'full_pipeline':
             results = self.module_selector_agent.execute()
             interpretation = self.interpretation_agent.interpret(results)
             recommendations = self.recommendation_agent.recommend(results, interpretation)
+        elif intent == 'evaluation_only':
+            results = self.module_selector_agent.execute()
         elif intent == 'interpretation_only':
             interpretation = self.interpretation_agent.interpret()
         elif intent == 'recommendation_only':

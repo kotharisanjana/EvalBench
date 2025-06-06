@@ -1,5 +1,5 @@
 from typing import List
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Coherence, Conciseness
 
@@ -49,7 +49,7 @@ def conciseness_score(response: List[str]) -> List[str]:
             completion = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0
+                temperature=0,
             )
             score = completion.choices[0].message.content
             label = Conciseness.from_score(float(score))
@@ -107,7 +107,7 @@ def coherence_score(response: List[str]) -> List[str]:
             completion = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0
+                temperature=0,
             )
             score = completion.choices[0].message.content
             label = Coherence.from_score(float(score))

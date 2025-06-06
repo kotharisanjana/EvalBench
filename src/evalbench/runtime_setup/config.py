@@ -4,7 +4,7 @@ import yaml
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from groq import Groq
-from evalbench.utils.helper import download_nltk_data
+from evalbench.utils.metrics_helper import download_nltk_data
 
 class EvalConfig:
     def __init__(

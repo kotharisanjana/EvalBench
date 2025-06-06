@@ -5,7 +5,7 @@ from nltk.translate.meteor_score import meteor_score as meteor
 from nltk.tokenize import word_tokenize
 import bert_score as bert
 from sentence_transformers import util
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 
 @register_metric(

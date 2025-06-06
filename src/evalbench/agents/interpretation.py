@@ -10,21 +10,20 @@ class Interpretation:
 
         prompt = f'''
         You are an expert model evaluation analyst.
-        Your task is to interpret a set of evaluation metric results computed over model outputs. Based on these scores, provide **concise, accurate, and insightful analysis** of the model’s **quality, strengths, and weaknesses**. 
-        Your goal is to help a practitioner understand what the numbers reveal about system performance, even without seeing the raw inputs.
+
+        Your task is to interpret a set of evaluation metric results computed over multiple model outputs. Based on these scores, provide a concise, holistic analysis of the model’s overall performance, strengths, and weaknesses.
         
         Instructions:
-        - Focus on the **meaning and implications of each metric**.
-        - Explain **patterns, tradeoffs, or inconsistencies** across metrics.
-        - Avoid generic commentary; use **concrete, data-driven reasoning**.
-        - Use the task explanation in your analysis and give meaningful interpretation of the results.
-        - If results suggest a strength (e.g. high coherence), say what that means functionally.
-        - If results suggest a weakness (e.g. low factuality or MRR), suggest **why that may matter** in practice.
-        - Keep the tone analytical and actionable. Do **not** just restate the scores.
-        - Do not include any recommendations or next steps; focus **only on interpretation**.
+        - Analyze the aggregate patterns across all metrics together, not just metric-by-metric.
+        - Provide an integrated summary that synthesizes what the numbers reveal about the system’s behavior.
+        - Highlight key tradeoffs or tensions between metrics.
+        - Avoid listing or explaining each metric separately.
+        - Use concrete, data-driven reasoning tied to the task.
+        - Focus on the whole system’s quality, not on individual data points.
+        - Return a numbered list of 2–3 concise, insightful points capturing the overall picture.
+        - Do not include recommendations or next steps; focus only on interpretation.
         
-        Here are some examples:
-        Example 1:
+        Example:
         Metric Results:
         {{
           'bleu_score': [0.21, 0.25, 0.22],
@@ -32,10 +31,10 @@ class Interpretation:
           'bert_score': [0.78, 0.80, 0.77]
         }}
         Interpretation:
-        The model produces moderately relevant and semantically close responses (high BERT score), but its lexical overlap is relatively low (lower BLEU/ROUGE), suggesting that while the meaning is preserved, phrasing diverges from references. It may be suitable for creative paraphrasing, but less so for strict template-matching tasks.
-        
-        ---
-        
+        1. The model maintains strong semantic relevance overall (high BERT scores), indicating good meaning preservation.
+        2. Lexical overlap metrics (BLEU and ROUGE) are lower, suggesting that while the meaning is retained, surface phrasing varies substantially.
+        3. This pattern implies the model is effective at generating diverse but semantically aligned responses, which may be advantageous in creative or flexible language generation tasks.
+
         Example 2:
         Metric Results:
         {{
@@ -45,8 +44,6 @@ class Interpretation:
         }}
         Interpretation:
         The system retrieves most of the relevant documents (high recall), but many of the retrieved results are irrelevant (low precision). Additionally, relevant documents often appear lower in the list (low MRR), indicating room for improvement in ranking. Consider improving ranking heuristics or embedding quality.
-        
-        ---
         
         Example 3:
         Metric Results:
@@ -59,13 +56,9 @@ class Interpretation:
         The chatbot's responses are mostly coherent and factually grounded but only moderately helpful to users. This may mean that while responses are well-structured and accurate, they do not always address the user's intent effectively. Optimizing intent recognition and tailoring responses to queries may help.
         
         ---
-
         Now interpret the following:
-        
-        Metric Results:
-        {metric_results}
-        Task:
-        {self.parsed_request['task']}
+        Task: {self.parsed_request['task']}
+        Metric Results: {metric_results}
         '''
 
         try:

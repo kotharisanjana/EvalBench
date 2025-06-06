@@ -11,26 +11,24 @@ def get_user_intent(instruction):
     try:
         prompt = f'''
         You are an intent classification assistant.
-
         Your task is to determine the user's intent based on their instruction for using the evaluation library.
-
-        Classify the instruction into **one and only one** of the following categories, and return your answer using exactly one of these strings (case-sensitive, no extra text):
-
-        - full_evaluation
+        Classify the instruction into one and only one of the following categories, and return your answer using exactly one of these strings (case-sensitive, no extra text):
+        - full_pipeline
+        - evaluation_only
         - interpretation_only
         - recommendation_only
         - interpretation and recommendation
         - vague/unclear
-
+        
         Guidelines:
-        - **full_evaluation** → if the user wants to evaluate model outputs using metrics, wants an explanation of the metric results and finally a recommendation to improve based on the result and data.
-        - **interpretation_only** → if the user has already run metrics and now wants an explanation or analysis of the scores.
-        - **recommendation_only** → if the user wants suggestions on how to improve based on the evaluation results or input behavior.
-        - **interpretation and recommendation** → if the user wants both analysis of the scores and suggestions for improvement.
-        - **vague/unclear** → if the instruction is incomplete, ambiguous, or doesn't clearly indicate what they want.
-
-        Respond with the intent **only**, nothing else.
-
+        - full_pipeline → if the user wants to evaluate model outputs using metrics, wants an explanation of the metric results and finally a recommendation to improve based on the result and data.
+        - evaluation_only → if the user wants to run metrics on model outputs without any further analysis or recommendations.
+        - interpretation_only → if the user has already run metrics and now wants an explanation or analysis of the scores.
+        - recommendation_only → if the user wants suggestions on how to improve based on the evaluation results or input behavior.
+        - interpretation and recommendation → if the user wants both analysis of the scores and suggestions for improvement.
+        - vague/unclear → if the instruction is incomplete, ambiguous, or doesn't clearly indicate what they want.
+        - Respond with the intent only, nothing else.
+        
         User Instruction:
         \'\'\'{instruction}\'\'\'
         '''
@@ -51,18 +49,54 @@ def get_task(instruction, data):
     try:
         prompt = f'''
         You are a task identification assistant.
+        Your job is to identify the underlying NLP task the user is working on based on their instruction and data. 
+        The user may talk about evaluation, interpretation, or improvement, but your focus is only on identifying the core language task being performed — such as question answering, summarization, dialogue generation, etc.
 
-        Your job is to understand what kind of language task the user is performing, based on their instruction and data. 
-        Output a short, descriptive phrase that best captures the nature of the task (e.g., 'summarization', 'retrieval-based question answering', 'chatbot response generation', 'information extraction').
-        Focus only on the NLP task aspect, not the recommendation.
-        Be concise. Use only one phrase. Avoid generic labels like 'NLP task'.
+        Guidelines:
+        - Output only the name of the NLP task.
+        - Your answer should be short (3-5 words max), lowercase, and specific (e.g., 'retrieval-based question answering', 'document summarization', 'chatbot response generation').
+        - Ignore mentions of evaluation, interpretation, or improvement. Focus on what kind of language task the model is being used for.
+        - If the task is unclear or ambiguous, return: `unknown`
+
+        ---
+
+        Examples:
+
+        Instruction:
+        'Is the answer factually accurate and relevant to the user’s query?'
+        Data:
+        {{'query': 'What is photosynthesis?', 'response': 'It is how plants make energy from sunlight.'}}
+        → retrieval-based question answering
+
+        Instruction:
+        'Check if the summary captures all the key points and suggest improvements.'
+        Data:
+        {{'text': '...', 'summary': '...'}}
+        → document summarization
+
+        Instruction:
+        'Evaluate the response quality and help me improve my chatbot.'
+        Data:
+        {{'query': 'What's the weather today?', 'response': 'Hi there! I'm not sure.'}}
+        → chatbot response generation
+
+        Instruction:
+        'Evaluate this for coherence.'
+        Data:
+        N/A
+        → unknown
+
+        ---
+
+        Now, identify the task for the input below.
 
         User Instruction:
         \'\'\'{instruction}\'\'\'
 
-        Input Data (if any):
+        Input Data:
         \'\'\'{data if data else 'N/A'}\'\'\'
         '''
+
         response = cfg.groq_client.chat.completions.create(
             model=cfg.llm,
             messages=[{'role': 'user', 'content': prompt}],
@@ -163,30 +197,30 @@ def generate_report(request):
     interpretation = request.get('interpretation', '').strip()
     recommendations = request.get('recommendations', '').strip()
 
-    report = ["---", "LLM Evaluation Report\n", f"Instruction:\n{instruction}\n", f"Inferred Task:\n{task}\n"]
+    report = ['---', 'LLM Evaluation Report\n', f'Instruction:\n{instruction}\n', f'Inferred Task:\n{task}\n']
 
     if results:
-        report.append("Evaluation Results:")
+        report.append('Evaluation Results:')
         for metric, score in results.items():
             if isinstance(score, list) and len(score) == 1:
                 score_str = score[0]
             else:
                 score_str = str(score)
-            report.append(f"- {metric}: {score_str}")
-        report.append("")  # spacing
+            report.append(f'- {metric}: {score_str}')
+        report.append('')  # spacing
 
     if interpretation:
-        report.append("Interpretation:")
+        report.append('Interpretation:')
         report.append(interpretation)
-        report.append("")
+        report.append('')
 
     if recommendations:
-        report.append("Recommendations:")
+        report.append('Recommendations:')
         report.append(recommendations)
-        report.append("")
+        report.append('')
 
-    report.append("---")
-    report.append("This report was automatically generated by EvalBench.")
+    report.append('---')
+    report.append('This report was automatically generated by EvalBench.')
 
-    return "\n".join(report)
+    return '\n'.join(report)
 

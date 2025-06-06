@@ -1,7 +1,7 @@
 import os
 import sys
 from importlib.util import spec_from_file_location, module_from_spec
-from evalbench.utils.helper import expose_custom_metrics
+from evalbench.utils.metrics_helper import expose_custom_metrics
 
 def load_custom_metrics(file_path: str):
     if not os.path.exists(file_path):

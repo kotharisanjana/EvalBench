@@ -10,7 +10,7 @@ class ModuleSelection:
         self.available_metrics = list(evalbench.metric_registry.keys())
         self.validated_metrics = []
 
-    def determine_evaluation_metrics(self):
+     def determine_evaluation_metrics(self):
         available_metrics_str = ', '.join(self.available_metrics)
 
         few_shot_examples = '''
@@ -76,7 +76,7 @@ class ModuleSelection:
 
         self.validated_metrics = [m for m in requested_metrics if m in self.available_metrics]
 
-    def execute(self):
+     def execute(self):
         self.determine_evaluation_metrics()
         metric_inputs_map = prepare_metric_inputs(self.validated_metrics, self.parsed_request['data'])
 

@@ -1,5 +1,5 @@
 from typing import List
-from evalbench.utils.helper import  get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import  get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 from evalbench.utils.enum import Groundedness
 
@@ -110,7 +110,7 @@ def groundedness_score(context: List[List[str]], generated: List[str]) -> List[s
             completion = cfg.groq_client.chat.completions.create(
                 model=cfg.llm,
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0.0
+                temperature=0,
             )
             score = completion.choices[0].message.content
             label = Groundedness.from_score(float(score))

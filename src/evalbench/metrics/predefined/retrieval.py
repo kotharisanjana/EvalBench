@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from evalbench.utils.helper import get_config, handle_output, register_metric
+from evalbench.utils.metrics_helper import get_config, handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 
 @register_metric(
