@@ -5,9 +5,9 @@ import evalbench.metrics.predefined.response_quality as response_quality
 def test_data():
     return {
         'response': [
-            "The Earth orbits the Sun once every 365.25 days.",
-            "It takes 365 days for Earth to orbit, which we know because of the calendar that was made by humans over time.",
-            "Bananas can be used to power spaceships through the moon tunnel.",
+            'The Earth orbits the Sun once every 365.25 days.',
+            'It takes 365 days for Earth to orbit, which we know because of the calendar that was made by humans over time.',
+            'Bananas can be used to power spaceships through the moon tunnel.',
         ]
     }
 

@@ -30,12 +30,12 @@ def conciseness_score(response: List[str]) -> List[str]:
         - Assume you're evaluating as a human would: fair, consistent, and strict.
 
         Examples:
-        Query: "What is the capital of France?"  
-        Response: "The capital city of France, which is a country in Europe, is the well-known and widely celebrated city of Paris."  
+        Query: 'What is the capital of France?'  
+        Response: 'The capital city of France, which is a country in Europe, is the well-known and widely celebrated city of Paris.'  
         Rating: 1
 
-        Query: "What is the capital of France?"  
-        Response: "The capital of France is Paris."  
+        Query: 'What is the capital of France?'  
+        Response: 'The capital of France is Paris.'  
         Rating: 3
 
         Now evaluate:
@@ -54,9 +54,9 @@ def conciseness_score(response: List[str]) -> List[str]:
             score = completion.choices[0].message.content
             label = Conciseness.from_score(float(score))
             if label:
-                results.append(f"{float(score)} - {label.description}")
+                results.append(f'{float(score)} - {label.description}')
         except ValueError as e:
-            results.append("Invalid score")
+            results.append('Invalid score')
 
     return results
 
@@ -88,12 +88,12 @@ def coherence_score(response: List[str]) -> List[str]:
         - Assume you're evaluating as a human would: fair, consistent, and strict.
 
         Examples:
-        Query: "How does a bill become a law?"  
-        Response: "First, lawmakers. Then the president. Law!"  
+        Query: 'How does a bill become a law?'  
+        Response: 'First, lawmakers. Then the president. Law!'  
         Rating: 1
 
-        Query: "How does a bill become a law?"  
-        Response: "A bill is proposed, goes through committees and votes, and if approved, the president signs it into law."  
+        Query: 'How does a bill become a law?'  
+        Response: 'A bill is proposed, goes through committees and votes, and if approved, the president signs it into law.'  
         Rating: 3
 
         Now evaluate:
@@ -112,9 +112,9 @@ def coherence_score(response: List[str]) -> List[str]:
             score = completion.choices[0].message.content
             label = Coherence.from_score(float(score))
             if label:
-                results.append(f"{float(score)} - {label.description}")
+                results.append(f'{float(score)} - {label.description}')
         except ValueError as e:
-            results.append("Invalid score")
+            results.append('Invalid score')
 
     return results
 
@@ -133,10 +133,10 @@ def factuality_score(response: List[str]) -> List[float]:
     results = []
 
     for resp in response:
-        hypothesis = f"Is the following response factually correct. Response: ""{resp}"""
+        hypothesis = f'Is the following response factually correct. Response: ''{resp}'""
         result = cfg.fact_check_model(resp, candidate_labels, hypothesis=hypothesis)
         labels = result["labels"]
         scores = result["scores"]
-        results.append(scores[labels.index("factually correct")])
+        results.append(round(scores[labels.index("factually correct")], 2))
 
     return results

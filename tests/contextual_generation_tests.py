@@ -4,15 +4,15 @@ import evalbench.metrics.predefined.contextual_generation as contextual_generati
 @pytest.fixture
 def test_data():
     return {
-        "context": [
-            ["The Eiffel Tower is located in Paris, France."],
-            ["Water boils at 100 degrees Celsius."],
-            ["The capital of Germany is Berlin."]
+        'context': [
+            ['The Eiffel Tower is located in Paris, France.'],
+            ['Water boils at 100 degrees Celsius.'],
+            ['The capital of Germany is Berlin.']
         ],
-        "generated": [
-            "The Eiffel Tower one of the prime landmarks of France and is a very popular tourist site.",
-            "Water freezes at 100 degrees Celsius.",
-            "The world is battling hunger and poverty"
+        'generated': [
+            'The Eiffel Tower one of the prime landmarks of France and is a very popular tourist site.',
+            'Water freezes at 100 degrees Celsius.',
+            'The world is battling hunger and poverty'
         ]
     }
 

@@ -10,12 +10,12 @@ __all__ = []
 
 # metric modules and individual metrics
 module_names = {
-    "response_quality": "metrics.predefined.response_quality",
-    "reference_based": "metrics.predefined.reference_based",
-    "contextual_generation": "metrics.predefined.contextual_generation",
-    "retrieval": "metrics.predefined.retrieval",
-    "query_alignment": "metrics.predefined.query_alignment",
-    "response_alignment": "metrics.predefined.response_alignment",
+    'response_quality': 'metrics.predefined.response_quality',
+    'reference_based': 'metrics.predefined.reference_based',
+    'contextual_generation': 'metrics.predefined.contextual_generation',
+    'retrieval': 'metrics.predefined.retrieval',
+    'query_alignment': 'metrics.predefined.query_alignment',
+    'response_alignment': 'metrics.predefined.response_alignment',
 }
 
 # evaluate module
@@ -28,10 +28,10 @@ decorators = ['register_metric', 'handle_output']
 custom = ['load_custom_metrics']
 
 # configs
-configs = ["EvalConfig", "set_config"]
+configs = ['EvalConfig', 'set_config']
 
 # agent_pipeline
-agent_pipeline = ["run_agent_pipeline"]
+agent_pipeline = ['run_agent_pipeline']
 
 # expose metrics
 expose_metrics(module_names)

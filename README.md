@@ -45,7 +45,7 @@ pip install evalbench
 import evalbench as eb
 
 # Create and apply evaluation configuration
-config = eb.EvalConfig(groq_api_key="", output_mode="print")
+config = eb.EvalConfig(groq_api_key='', output_mode='print')
 eb.set_config(config)
 ```
 
@@ -53,8 +53,8 @@ eb.set_config(config)
 #### 1. Evaluate a single predefined metric
 
 ```python
-response = ["A binary search algorithm reduces the time complexity to O(log n)."]
-context = [["Binary search works on sorted arrays and is faster than linear search."]]
+response = ['A binary search algorithm reduces the time complexity to O(log n).']
+context = [['Binary search works on sorted arrays and is faster than linear search.']]
 
 eb.faithfulness_score(context=context, generated=response)
 

@@ -5,7 +5,7 @@ from evalbench.utils.metrics_helper import expose_custom_metrics
 
 def load_custom_metrics(file_path: str):
     if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Custom metrics file not found: {file_path}")
+        raise FileNotFoundError(f'Custom metrics file not found: {file_path}')
 
     module_name = os.path.splitext(os.path.basename(file_path))[0]
 
