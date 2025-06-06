@@ -25,7 +25,7 @@ def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[f
         )
         labels = result['labels']
         scores = result['scores']
-        results.append(round(scores[labels.index('faithful to context')]), 2)
+        results.append(round(scores[labels.index('faithful to context')], 2))
 
     return results
 
@@ -52,7 +52,7 @@ def hallucination_score(context: List[List[str]], generated: List[str]) -> List[
         labels = result['labels']
         scores = result['scores']
         # Lower entailment score = higher hallucination likelihood
-        results.append(round(1 - scores[labels.index('entailment')]), 2)
+        results.append(round(1 - scores[labels.index('entailment')], 2))
 
     return results
 

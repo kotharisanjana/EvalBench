@@ -6,6 +6,7 @@ import os
 from functools import wraps
 from typing import Callable, List, Any
 from evalbench.runtime_setup.runtime import get_config
+from evalbench.utils.print_control import is_printing_suppressed
 import evalbench
 
 def _get_input_data(func, args, kwargs):
@@ -28,7 +29,7 @@ def handle_output():
                 error_message = str(e)
 
             input_data = _get_input_data(func, args, kwargs)
-            if cfg.output_mode == 'print':
+            if cfg.output_mode == 'print' and not is_printing_suppressed():
                 _print_results(func.__name__, input_data, result, error_message)
             elif cfg.output_mode == 'save':
                 _save_results(func.__name__, input_data, result, error_message)
@@ -201,12 +202,7 @@ def generate_report(request):
 
     if results:
         report.append('Evaluation Results:')
-        for metric, score in results.items():
-            if isinstance(score, list) and len(score) == 1:
-                score_str = score[0]
-            else:
-                score_str = str(score)
-            report.append(f'- {metric}: {score_str}')
+        report.append(json.dumps(results, indent=2))
         report.append('')
 
     if interpretation:
