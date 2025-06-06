@@ -19,13 +19,13 @@ def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[f
 
     for ctx, gen in zip(context, generated):
         result = cfg.fact_check_model(
-            sequences=" ".join(ctx),
+            sequences=' '.join(ctx),
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
-        labels = result["labels"]
-        scores = result["scores"]
-        results.append(scores[labels.index("faithful to context")])
+        labels = result['labels']
+        scores = result['scores']
+        results.append(round(scores[labels.index('faithful to context')], 2))
 
     return results
 
@@ -40,19 +40,19 @@ def hallucination_score(context: List[List[str]], generated: List[str]) -> List[
     validation.validate_batch_inputs(('context', context), ('generated', generated))
 
     cfg = get_config()
-    candidate_labels = ["entailment", "neutral", "contradiction"]
+    candidate_labels = ['entailment', 'neutral', 'contradiction']
     results = []
 
     for ctx, gen in zip(context, generated):
         result = cfg.fact_check_model(
-            sequences=" ".join(ctx),
+            sequences=' '.join(ctx),
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
-        labels = result["labels"]
-        scores = result["scores"]
+        labels = result['labels']
+        scores = result['scores']
         # Lower entailment score = higher hallucination likelihood
-        results.append(1 - scores[labels.index("entailment")])
+        results.append(round(1 - scores[labels.index('entailment')], 2))
 
     return results
 
@@ -84,16 +84,16 @@ def groundedness_score(context: List[List[str]], generated: List[str]) -> List[s
         - Use the full scale when appropriate.
 
         Examples:
-        Context: "Apple is headquartered in Cupertino, California. Its CEO is Tim Cook."  
-        Response: "Apple was founded in 1976 and is based in California."  
+        Context: 'Apple is headquartered in Cupertino, California. Its CEO is Tim Cook.'  
+        Response: 'Apple was founded in 1976 and is based in California.'  
         Rating: 2
 
-        Context: "Apple is headquartered in Cupertino, California. Its CEO is Tim Cook."  
-        Response: "Apple's CEO is Tim Cook and its headquarters are in Cupertino."  
+        Context: 'Apple is headquartered in Cupertino, California. Its CEO is Tim Cook.'  
+        Response: 'Apple's CEO is Tim Cook and its headquarters are in Cupertino.'  
         Rating: 3
 
-        Context: "Apple is headquartered in Cupertino, California. Its CEO is Tim Cook."  
-        Response: "Microsoft is based in Redmond and led by Satya Nadella."  
+        Context: 'Apple is headquartered in Cupertino, California. Its CEO is Tim Cook.'  
+        Response: 'Microsoft is based in Redmond and led by Satya Nadella.'  
         Rating: 1
 
         Now evaluate:

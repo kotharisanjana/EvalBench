@@ -31,4 +31,4 @@ def test_mrr(test_data):
     score = retrieval.mrr_score(test_data['relevant_docs'], test_data['retrieved_docs'], test_data['k'])
     expected = [0.0, 0.5, 1.0]
     assert all(abs(a - b) < 1e-5 for a, b in zip(score, expected)), \
-        f"Expected {expected}, got {score}"
+        f'Expected {expected}, got {score}'

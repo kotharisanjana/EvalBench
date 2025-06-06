@@ -3,6 +3,7 @@ from evalbench.agents.module_selection import ModuleSelection
 from evalbench.agents.recommendation import Recommendation
 from evalbench.runtime_setup.runtime import get_config
 import evalbench.utils.agent_helper as helper
+from evalbench.utils.metrics_helper import generate_report
 
 class Master:
     def __init__(self):
@@ -30,13 +31,12 @@ class Master:
         self.interpretation_agent = Interpretation(self.request)
         self.recommendation_agent = Recommendation(self.request)
 
-     def execute(self):
+    def execute(self):
         results = None
         interpretation = None
         recommendations = None
 
         intent = self.request['intent']
-        print("intent = ", intent)
         if intent == 'full_pipeline':
             results = self.module_selector_agent.execute()
             interpretation = self.interpretation_agent.interpret(results)
@@ -51,15 +51,16 @@ class Master:
             interpretation = self.interpretation_agent.interpret()
             recommendations = self.recommendation_agent.recommend(interpretation)
         else:
-            raise ValueError('Sorry, I couldn’t understand your request')
+            raise ValueError(helper.improve_prompt(self.request['instruction']))
 
         report_data = {
             'instruction': self.request['instruction'],
             'task': self.request['task'],
+            'data': self.request['data'],
             'results': self.request['results'] if self.request['results'] else results,
             'interpretation': self.request['interpretation'] if self.request['interpretation'] else interpretation,
             'recommendations': recommendations
         }
-        report = helper.generate_report(report_data)
+        report = generate_report(report_data)
 
         return report

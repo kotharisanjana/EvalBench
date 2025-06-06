@@ -61,9 +61,9 @@ def answer_relevance_score(query: List[str], response: List[str]) -> List[str]:
             score = completion.choices[0].message.content.strip()
             label = Relevance.from_score(float(score))
             if label:
-                results.append(f"{float(score)} - {label.description}")
+                results.append(f'{float(score)} - {label.description}')
         except ValueError as e:
-            results.append("Invalid score")
+            results.append('Invalid score')
 
     return results
 
@@ -107,10 +107,10 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[str]:
 
             Now rate this:
             Query:
-            \'\'\"{q}\"\"\"
+            \'\'\'{q}\'\'\'
 
             Response:
-            \"\"\"{r}\"\"\"
+            \'\'\'{r}\'\'\'
 
             Rating:
             '''.strip()
@@ -124,8 +124,8 @@ def helpfulness_score(query: List[str], response: List[str]) -> List[str]:
             score = completion.choices[0].message.content.strip()
             label = AnswerHelpfulness.from_score(float(score))
             if label:
-                results.append(f"{float(score)} - {label.description}")
+                results.append(f'{float(score)} - {label.description}')
         except ValueError as e:
-            results.append("Invalid score")
+            results.append('Invalid score')
 
     return results

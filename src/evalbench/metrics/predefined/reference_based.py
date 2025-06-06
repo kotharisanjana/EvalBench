@@ -19,7 +19,7 @@ def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
     validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     return [
-        sentence_bleu([word_tokenize(ref)], word_tokenize(gen))
+        round(sentence_bleu([word_tokenize(ref)], word_tokenize(gen)), 2)
         for ref, gen in zip(reference, generated)
     ]
 
@@ -34,7 +34,7 @@ def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, fl
 
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     return [
-        {k: v.fmeasure for k, v in scorer.score(ref, gen).items()}
+        {k: round(v.fmeasure, 2) for k, v in scorer.score(ref, gen).items()}
         for ref, gen in zip(reference, generated)
     ]
 
@@ -49,7 +49,7 @@ def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
     validation.validate_batch_inputs(('reference', reference), ('generated', generated))
 
     return [
-        meteor([word_tokenize(ref)], word_tokenize(gen))
+        round(meteor([word_tokenize(ref)], word_tokenize(gen)), 2)
         for ref, gen in zip(reference, generated)
     ]
 
@@ -66,10 +66,10 @@ def semantic_similarity_score(reference: List[str], generated: List[str]) -> Lis
     cfg = get_config()
 
     return [
-        util.pytorch_cos_sim(
+        round(util.pytorch_cos_sim(
             cfg.sentence_model.encode(ref, convert_to_tensor=True),
             cfg.sentence_model.encode(gen, convert_to_tensor=True)
-        ).item()
+        ).item(), 2)
         for ref, gen in zip(reference, generated)
     ]
 
@@ -86,9 +86,9 @@ def bert_score(reference: List[str], generated: List[str]) -> List[Dict[str, flo
     precision, recall, f1 = bert.score(generated, reference, lang='en', verbose=False)
     return [
         {
-            'precision': precision[i].item(),
-            'recall': recall[i].item(),
-            'f1': f1[i].item()
+            'precision': round(precision[i].item(), 2),
+            'recall': round(recall[i].item(), 2),
+            'f1': round(f1[i].item(), 2)
         }
         for i in range(len(reference))
     ]

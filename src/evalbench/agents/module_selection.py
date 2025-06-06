@@ -10,26 +10,26 @@ class ModuleSelection:
         self.available_metrics = list(evalbench.metric_registry.keys())
         self.validated_metrics = []
 
-     def determine_evaluation_metrics(self):
+    def determine_evaluation_metrics(self):
         available_metrics_str = ', '.join(self.available_metrics)
 
         few_shot_examples = '''
         Example 1:
         User query: 'Evaluate the generated answers using BLEU and ROUGE scores.'
         Response: ['bleu_score', 'rouge_score']
-
+    
         Example 2:
         User query: 'I want to evaluate how well my retrieval system does — maybe precision and recall?'
         Response: ['precision_at_k', 'recall_at_k']
-
+    
         Example 3:
         User query: 'Check if the chatbot responses are coherent and concise.'
         Response: ['coherence_score', 'conciseness_score']
-
+    
         Example 4:
         User query: 'I’m not sure what metrics to use, just help me evaluate the responses.'
         Response: ['bleu_score', 'rouge_score', 'bert_score', 'factuality_score']
-
+    
         Example 5:
         User query: 'I just want to know how relevant the answers are to the queries.'
         Response: ['answer_relevance_score']
@@ -48,16 +48,16 @@ class ModuleSelection:
         {available_metrics_str}
         
         The user could be evaluating the following tasks: {self.parsed_request['task']}. Use this information to determine which metrics to evaluate based on the task.
-
+    
         Given the user query below, do the following:
         - If the query explicitly mentions any metric names from the above list, return those metric names only.
         - If no explicit metrics are mentioned, infer the evaluation task from the query and return a relevant subset of metric names from the list.
         - If no suitable metrics are found, return an empty list.
-
+    
         Respond ONLY with a Python list of metric names.
         
         {few_shot_examples}
-
+    
         User query:
         \'\'\'{self.parsed_request['instruction']}\'\'\'
         '''
@@ -76,7 +76,7 @@ class ModuleSelection:
 
         self.validated_metrics = [m for m in requested_metrics if m in self.available_metrics]
 
-     def execute(self):
+    def execute(self):
         self.determine_evaluation_metrics()
         metric_inputs_map = prepare_metric_inputs(self.validated_metrics, self.parsed_request['data'])
 

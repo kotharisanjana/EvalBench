@@ -26,7 +26,7 @@ def test_rouge_score(test_data):
     for score_dict in score:
         assert isinstance(score_dict, dict)
         for key, value in score_dict.items():
-            assert 0.0 <= value <= 1.0, f"{key} score out of range: {value}"
+            assert 0.0 <= value <= 1.0, f'{key} score out of range: {value}'
 
 def test_meteor_score(test_data):
     score = reference_based.meteor_score(test_data['reference'], test_data['generated'])
@@ -42,4 +42,4 @@ def test_bert_score(test_data):
     score = reference_based.bert_score(test_data['reference'], test_data['generated'])
     for score_dict in score:
         for key in ['precision', 'recall', 'f1']:
-            assert 0.0 <= score_dict[key] <= 1.0, f"{key} out of range: {score_dict[key]}"
+            assert 0.0 <= score_dict[key] <= 1.0, f'{key} out of range: {score_dict[key]}'

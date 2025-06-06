@@ -60,8 +60,8 @@ def context_relevance_score(query: List[str], context: List[str]) -> List[str]:
             score = response.choices[0].message.content.strip()
             label = Relevance.from_score(float(score))
             if label:
-                results.append(f"{float(score)} - {label.description}")
+                results.append(f'{float(score)} - {label.description}')
         except ValueError as e:
-            results.append("Invalid score")
+            results.append('Invalid score')
 
     return results
