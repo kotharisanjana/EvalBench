@@ -9,7 +9,6 @@ It now includes agentic workflows: just describe what you want to understand or 
 - Modular architecture to group related metrics and share inputs
 - Agentic execution: EvalBench can reason about your goal and execute the necessary steps (evaluate → interpret → recommend)
 - Batch support, configurable output (print/save), and JSON-compatible results
-- Supports both CLI and Python environment execution
 
 ### 📊 Modules and Metric Categories:
 
