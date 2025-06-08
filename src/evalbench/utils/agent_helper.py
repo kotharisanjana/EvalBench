@@ -6,31 +6,24 @@ from collections import defaultdict
 import evalbench
 from evalbench.runtime_setup.runtime import get_config
 
-# make confident decisions so downstream processes are deterministic and manageable
-def get_user_intent(instruction):
+def plan_steps(instruction):
     cfg = get_config()
 
     def call():
         prompt = f'''
-        You are an intent classification assistant.
-        Your task is to determine the user's intent based on their instruction for using the evaluation library.
-        Classify the instruction into one and only one of the following categories, and return your answer using exactly one of these strings (case-sensitive, no extra text):
-        - full_pipeline
-        - evaluation_only
-        - interpretation_only
-        - recommendation_only
-        - interpretation and recommendation
-        - vague/unclear
+        You are a planning assistant for an LLM evaluation library called EvalBench.
+
+        Your task is to determine which of the following steps should be executed to fulfill the user's instruction.  
+        These steps must be executed in this strict order because they are interdependent:
         
-        Guidelines:
-        - full_pipeline → if the user wants to evaluate model outputs using metrics, wants an explanation of the metric results and finally a recommendation to improve based on the result and data.
-        - evaluation_only → if the user wants to run metrics on model outputs without any further analysis or recommendations.
-        - interpretation_only → if the user has already run metrics and now wants an explanation or analysis of the scores.
-        - recommendation_only → if the user wants suggestions on how to improve based on the evaluation results or input behavior.
-        - interpretation and recommendation → if the user wants both analysis of the scores and suggestions for improvement.
-        - vague/unclear → if the instruction is incomplete, ambiguous, or doesn't clearly indicate what they want.
-        - Respond with the intent only, nothing else.
+        1. evaluation → Run one or more evaluation metrics on model outputs to produce structured results (e.g., accuracy, relevance, coherence, etc.).
+        2. interpretation → Analyze and explain the evaluation results to help the user understand what the scores mean and what they reveal about the model's behavior.
+        3. recommendation → Based on the evaluation results (and optionally their interpretation), suggest actions to improve model performance, prompt design, data, or evaluation strategy.
         
+        Only include a step if the user instruction clearly asks for it (either explicitly or implicitly).  
+        Output a Python list of strings in the correct order, using only the terms: 'evaluation', 'interpretation', 'recommendation'.
+        
+        ---
         User Instruction:
         \'\'\'{instruction}\'\'\'
         '''
@@ -103,20 +96,19 @@ def get_task(instruction, data):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=1,
         )
-
         return response.choices[0].message.content.strip()
 
     return retry_with_backoff(call)
 
-def parse_data(intent, data):
-    if intent == 'full_evaluation' or intent == 'evaluation_only':
+def parse_data(steps_to_execute, data):
+    if 'evaluation' in steps_to_execute:
         if not data:
             raise ValueError('Data is required for evaluation tasks.')
 
     if isinstance(data, (dict, list)):
         data = json.dumps(data)
 
-    json_candidates = re.findall(r'(\{.*?}|\[.*?])', data, re.DOTALL)
+    json_candidates = re.findall(r'(\{.?}|\[.?])', data, re.DOTALL)
 
     for blob in json_candidates:
         try:
@@ -199,25 +191,25 @@ def improve_prompt(instruction):
 
     try:
         prompt = f'''
-        You are a prompt improvement assistant.
-        Your task is to analyze the user instruction and suggest improvements to make it clearer, more specific, and easier to understand such that it can be effectively used to determine the user's intent (one of the following)
-        Possible user intents:
-        - full_pipeline → evaluate model outputs, explain the metrics, and suggest improvements
-        - evaluation_only → just compute evaluation metrics
-        - interpretation_only → analyze/interpret existing metric results
-        - recommendation_only → suggest improvements based on results
-        - interpretation and recommendation → analyze and recommend
-        - vague/unclear → original instruction was not clear enough
-        
-        Start your response with:
+        You are a prompt improvement assistant for an evaluation library called EvalBench.
+
+        Your goal is to help the user rewrite their instruction to be clearer and more specific, so it can be mapped to one or more of the following steps in an evaluation pipeline:
+        - evaluation → Run metrics like accuracy, coherence, relevance, etc. on model outputs.
+        - interpretation → Explain what the evaluation scores mean and what they reveal.
+        - recommendation → Suggest improvements based on the evaluation results or their interpretation.
+
+        Only rewrite the instruction if it's ambiguous or vague. Avoid changing its meaning unnecessarily. If it's unclear what the user wants, try offering different possible directions.
+
+        Respond with:
         'Sorry, I couldn’t understand your instruction. Here are some improvised ways you could phrase it:'
+
+        Then give 2–3 improved examples that:
+        - Are clearer and more actionable
+        - Explicitly or implicitly map to one or more of the steps above
+        - Use natural, user-friendly language
         
-        Then list 2–3 improved versions of the instruction. Each suggestion should be:
-        - Clear and specific
-        - Actionable (so it maps to one of the intents below)
-        - Rewritten in plain, user-friendly language
-        
-        User Instruction:
+        ---
+        Original user instruction:
         \'\'\'{instruction}\'\'\'
         '''
 
@@ -241,6 +233,6 @@ def retry_with_backoff(func, max_retries=3, initial_delay=1, *args, **kwargs):
         except Exception as e:
             if attempt < max_retries - 1:
                 time.sleep(delay)
-                delay *= 2
+                delay = 2
     return None
 

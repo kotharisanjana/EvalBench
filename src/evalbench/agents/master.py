@@ -1,3 +1,4 @@
+import ast
 from evalbench.agents.interpretation import Interpretation
 from evalbench.agents.module_selection import ModuleSelection
 from evalbench.agents.recommendation import Recommendation
@@ -17,13 +18,13 @@ class Master:
         if not isinstance(instruction, str) or not instruction.strip():
             raise ValueError('Instruction must be a non-empty string that instructs the agent to perform a tas.')
 
-        intent = helper.get_user_intent(instruction) # identify the steps to execute (evaluation/interpretation/recommendation)
+        steps_to_execute = ast.literal_eval(helper.plan_steps(instruction)) # identify the steps to execute (evaluation/interpretation/recommendation)
         task = helper.get_task(instruction, data) # to assist in interpretation and recommendation
-        input_data = helper.parse_data(intent, data) # parse data in the required form for downstream tasks
+        input_data = helper.parse_data(steps_to_execute, data) # parse data in the required form for downstream tasks
 
         self.request = {
             'instruction': instruction,
-            'intent': intent,
+            'steps': steps_to_execute,
             'task': task,
             'data': input_data,
             'results': eval_results,
@@ -40,34 +41,22 @@ class Master:
         interpretation = None
         recommendations = None
 
-        intent = self.request['intent']
-        if intent == 'full_pipeline':
-            results = self.module_selector_agent.execute()
-            if results:
+        steps_to_execute = self.request['steps']
+        for step in steps_to_execute:
+            if step == 'evaluation':
+                results = self.module_selector_agent.execute()
+                if not results:
+                    raise ValueError(helper.improve_prompt(self.request['instruction']))
+            elif step == 'interpretation':
+                if not results or not self.request['results']:
+                    raise ValueError('Evaluation results required for interpretation. Please ensure that the evaluation step is executed before interpretation or provide results explicitly.')
                 interpretation = self.interpretation_agent.interpret(results)
+            elif step == 'recommendation':
+                if not results or not self.request['results']:
+                    raise ValueError('Evaluation results required for recommendation. Please ensure that the evaluation step is executed or provide results explicitly.')
                 recommendations = self.recommendation_agent.recommend(results, interpretation)
-            # if metrics not found, results would be none - suggest improving the prompt
             else:
                 raise ValueError(helper.improve_prompt(self.request['instruction']))
-        elif intent == 'evaluation_only':
-            results = self.module_selector_agent.execute()
-            if not results:
-                raise ValueError(helper.improve_prompt(self.request['instruction']))
-        elif intent == 'interpretation_only':
-            if not self.request['results']:
-                raise ValueError('Results must be provided for interpretation.')
-            interpretation = self.interpretation_agent.interpret()
-        elif intent == 'recommendation_only':
-            if not self.request['results']:
-                raise ValueError('Results must be provided for recommendations.')
-            recommendations = self.recommendation_agent.recommend()
-        elif intent == 'interpretation and recommendation':
-            if not self.request['results']:
-                raise ValueError('Results must be provided for interpretation and recommendation.')
-            interpretation = self.interpretation_agent.interpret()
-            recommendations = self.recommendation_agent.recommend(interpretation)
-        else:
-            raise ValueError(helper.improve_prompt(self.request['instruction']))
 
         report_data = {
             'instruction': self.request['instruction'],
