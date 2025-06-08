@@ -1,120 +1,57 @@
 # EvalBench 🧪📊  
-**Lightweight, extensible, open-source evaluation framework for LLM applications covering approximately 18 metrics and allows adding of user-defined custom metrics**
+`EvalBench` is a plug-and-play Python package for evaluating outputs of large language models (LLMs) across a variety of metrics - from response quality and retrieval accuracy to hallucination and prompt alignment.
 
----
+It now includes agentic workflows: just describe what you want to understand or improve about your LLM outputs, and EvalBench will plan and execute a tailored sequence of evaluation, interpretation, and recommendation steps — automatically!
 
-## 🔍 About EvalBench
+### 🚀 Key Features:
+- 18+ built-in metrics covering coherence, relevance, hallucination, BLEU, ROUGE, MRR, and more
+- User-defined custom metrics with a simple decorator-based API
+- Modular architecture to group related metrics and share inputs
+- Agentic execution: EvalBench can reason about your goal and execute the necessary steps (evaluate → interpret → recommend)
+- Batch support, configurable output (print/save), and JSON-compatible results
 
-`EvalBench` is a plug-and-play Python package for evaluating outputs of large language models (LLMs) across a variety of metrics.
+### 📊 Modules and Metric Categories:
 
-#### Supports:
-- Predefined metrics (faithfulness, coherence, BLEU, hallucination, etc.)
-- Easy registration of custom user-defined metrics
-- Evaluation across different modalities/ use-cases
-- Flexible input/output options (print/ save) with support for list-based batching
+| Module               | Metrics                                          | 
+|----------------------|-------------------------------------------------|
+| response_quality     | conciseness, coherence, factuality  | 
+| reference_based      | bleu, rouge, meteor, semantic_similarity, bert  | 
+| contextual_generation | faithfulness, hallucination, groundedness       | 
+| retrieval          | recall@k, precision@k, ndcg@k, mrr            | 
+| query_alignment       | context_relevance                              | 
+| response_alignment    | answer_relevance, helpfulness           | 
+| user defined module               | User-registered custom metrics                   | 
 
-#### Modules and Metric Categories:
+### 🧠 Agentic Workflow
+EvalBench follows a three-step agentic pipeline, automatically triggered based on user instructions:
 
-| Module               | Metrics                                          | Required Arguments                         | Argument Types                          |
-|----------------------|-------------------------------------------------|-------------------------------------------|----------------------------------------|
-| response_quality     | conciseness_score, coherence_score, factuality_score   | response                                  | `List[str]`                            |
-| reference_based      | bleu_score, rouge_score, meteor_score, semantic_similarity_score, bert_score  | reference, generated      | `List[str]`, `List[str]`        |
-| contextual_generation | faithfulness_score, hallucination_score, groundedness_score       | context, generated                        | `List[List[str]]`, `List[str]` |
-| retrieval          | recall_at_k, precision_at_k, ndcg_at_k, mrr_score             | relevant_docs, retrieved_docs, k         | `List[List[str]]`, `List[List[str]]`, `int`       |
-| query_alignment       | context_relevance_score                                | query, context                           | `List[str]`, `List[str]`                    |
-| response_alignment    | answer_relevance_score, helpfulness_score            | query, response                          | `List[str]`, `List[str]`                    |
-| user defined module               | User-registered custom metrics                   | Varies (user-defined)                    | Varies (user-defined)                  |
+1. Evaluation – Runs relevant metrics to score model outputs. EvalBench intelligently selects which metrics to use if not explicitly specified.
+2. Interpretation – Analyzes the evaluation results and highlights potential issues with model behavior.
+3. Recommendation – Suggests improvements to prompts, model setup, data inputs, or evaluation strategy.
 
-#### EvalBench is especially useful when you're:
-- Building small-scale LLM pipelines
-- Comparing different prompts or model outputs
-- Rapidly iterating on metrics
+Just write your request in plain language — EvalBench will take care of the rest.
 
 ---
 
 ## 🚀 Usage
-
-### Installation
-
 ```bash
 pip install evalbench
 ```
-### Initialize Configuration
 
-```python
-import evalbench as eb
+All usage examples, including how to write your own custom metrics and how to use the agentic pipeline in practice, are available in this Jupyter notebook:
 
-# Create and apply evaluation configuration
-config = eb.EvalConfig(groq_api_key='', output_mode='print')
-eb.set_config(config)
-```
-
-### Usage Examples
-#### 1. Evaluate a single predefined metric
-
-```python
-response = ['A binary search algorithm reduces the time complexity to O(log n).']
-context = [['Binary search works on sorted arrays and is faster than linear search.']]
-
-eb.faithfulness_score(context=context, generated=response)
-
-# metrics can also be printed as a list
-result = eb.faithfulness_score(context=context, generated=response)
-print(result) # [0.44]
-```
-
-#### 2. Evaluate all metrics in a predefined module
-
-```python
-eb.evaluate_module(
-    module=["contextual_generation"],
-    context=context,
-    generated=response,
-)
-```
-
-#### 3. Register custom metrics
-Create a custom metric in a file (eg. custom.py):
-
-```python
-from evalbench import register_metric, handle_output
-
-@register_metric(name="len_metric", module="custom", required_args=["response", "reference"])
-@handle_output()
-def my_custom_metric(response, reference):
-    return [len(response) / len(reference)]
-```
-
-#### 4. Load custom metric file and evaluate
-
-```python
-eb.load_custom_metrics("custom.py")
-
-response = ["A binary search algorithm reduces the time complexity to O(log n).", "The Eiffel Tower is located in Berlin and was built in the 1800s."]
-reference = ["Binary search works on sorted arrays and is faster than linear search.", "In Python, a generator yields items one at a time using the 'yield' keyword."]
-
-# Evaluate custom metric directly
-eb.my_custom_metric(response, reference)
-
-# Evaluate all metrics in the 'custom' module
-eb.evaluate_module(
-    module=["custom"],
-    response=response,
-    reference=reference,
-)
-```
+👉 View the Notebook →
 
 ---
 
 ## 💡 Use Cases
-EvalBench is built for fast feedback loops while developing:
-- LLM Applications: Chatbots, assistants, summarization tools
-- Prompt Engineering: Compare prompt variations using faithfulness, conciseness, or BLEU
-- Model Evaluation: Benchmark outputs from different model runs
-- Custom Evaluation Design: Rapidly prototype domain-specific metrics
-
+EvalBench is ideal for:
+- Evaluating LLM apps like summarization tools, chat agents, and search bots
+- Creating your own domain-specific evaluation strategies
+- Getting automatic suggestions on how to improve prompts or evaluation design
+  
 ---
 
 ## 🚧 Coming Soon
-- Basic visualizations: Histograms and score distributions to quickly interpret results
-- Batch mode via JSONL/Pandas: Evaluate and export results from structured files
+- Dataset evaluation integration
+- Ecosystem integration - langchain/llama_index hooks
