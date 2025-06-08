@@ -1,34 +1,29 @@
 import re
 import json
 from typing import List
+import time
 from collections import defaultdict
 import evalbench
 from evalbench.runtime_setup.runtime import get_config
 
-# make confident decisions so downstream processes are deterministic and manageable
-def get_user_intent(instruction):
+def plan_steps(instruction):
     cfg = get_config()
-    try:
+
+    def call():
         prompt = f'''
-        You are an intent classification assistant.
-        Your task is to determine the user's intent based on their instruction for using the evaluation library.
-        Classify the instruction into one and only one of the following categories, and return your answer using exactly one of these strings (case-sensitive, no extra text):
-        - full_pipeline
-        - evaluation_only
-        - interpretation_only
-        - recommendation_only
-        - interpretation and recommendation
-        - vague/unclear
+        You are a planning assistant for an LLM evaluation library called EvalBench.
+
+        Your task is to determine which of the following steps should be executed to fulfill the user's instruction.  
+        These steps must be executed in this strict order because they are interdependent:
         
-        Guidelines:
-        - full_pipeline → if the user wants to evaluate model outputs using metrics, wants an explanation of the metric results and finally a recommendation to improve based on the result and data.
-        - evaluation_only → if the user wants to run metrics on model outputs without any further analysis or recommendations.
-        - interpretation_only → if the user has already run metrics and now wants an explanation or analysis of the scores.
-        - recommendation_only → if the user wants suggestions on how to improve based on the evaluation results or input behavior.
-        - interpretation and recommendation → if the user wants both analysis of the scores and suggestions for improvement.
-        - vague/unclear → if the instruction is incomplete, ambiguous, or doesn't clearly indicate what they want.
-        - Respond with the intent only, nothing else.
+        1. evaluation → Run one or more evaluation metrics on model outputs to produce structured results (e.g., accuracy, relevance, coherence, etc.).
+        2. interpretation → Analyze and explain the evaluation results to help the user understand what the scores mean and what they reveal about the model's behavior.
+        3. recommendation → Based on the evaluation results (and optionally their interpretation), suggest actions to improve model performance, prompt design, data, or evaluation strategy.
         
+        Only include a step if the user instruction clearly asks for it (either explicitly or implicitly).  
+        Output a Python list of strings in the correct order, using only the terms: 'evaluation', 'interpretation', 'recommendation'.
+        
+        ---
         User Instruction:
         \'\'\'{instruction}\'\'\'
         '''
@@ -38,61 +33,60 @@ def get_user_intent(instruction):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=0,
         )
-        intent = response.choices[0].message.content.strip()
-    except Exception as e:
-        intent = None
+        return response.choices[0].message.content.strip()
 
-    return intent
+    return retry_with_backoff(call)
 
 def get_task(instruction, data):
     cfg = get_config()
-    try:
+
+    def call():
         prompt = f'''
         You are a task identification assistant.
         Your job is to identify the underlying NLP task the user is working on based on their instruction and data. 
         The user may talk about evaluation, interpretation, or improvement, but your focus is only on identifying the core language task being performed — such as question answering, summarization, dialogue generation, etc.
-
+    
         Guidelines:
         - Output only the name of the NLP task.
         - Your answer should be short (3-5 words max), lowercase, and specific (e.g., 'retrieval-based question answering', 'document summarization', 'chatbot response generation').
         - Ignore mentions of evaluation, interpretation, or improvement. Focus on what kind of language task the model is being used for.
         - If the task is unclear or ambiguous, return: `unknown`
-
+    
         ---
-
+    
         Examples:
-
+    
         Instruction:
         'Is the answer factually accurate and relevant to the user’s query?'
         Data:
         {{'query': 'What is photosynthesis?', 'response': 'It is how plants make energy from sunlight.'}}
         → retrieval-based question answering
-
+    
         Instruction:
         'Check if the summary captures all the key points and suggest improvements.'
         Data:
         {{'text': '...', 'summary': '...'}}
         → document summarization
-
+    
         Instruction:
         'Evaluate the response quality and help me improve my chatbot.'
         Data:
         {{'query': 'What's the weather today?', 'response': 'Hi there! I'm not sure.'}}
         → chatbot response generation
-
+    
         Instruction:
         'Evaluate this for coherence.'
         Data:
         N/A
         → unknown
-
+    
         ---
-
+    
         Now, identify the task for the input below.
-
+    
         User Instruction:
         \'\'\'{instruction}\'\'\'
-
+    
         Input Data:
         \'\'\'{data if data else 'N/A'}\'\'\'
         '''
@@ -102,17 +96,19 @@ def get_task(instruction, data):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=1,
         )
-        task = response.choices[0].message.content.strip()
-    except Exception as e:
-        task = None
+        return response.choices[0].message.content.strip()
 
-    return task
+    return retry_with_backoff(call)
 
-def parse_data(data):
+def parse_data(steps_to_execute, data):
+    if 'evaluation' in steps_to_execute:
+        if not data:
+            raise ValueError('Data is required for evaluation tasks.')
+
     if isinstance(data, (dict, list)):
         data = json.dumps(data)
 
-    json_candidates = re.findall(r'(\{.*?}|\[.*?])', data, re.DOTALL)
+    json_candidates = re.findall(r'(\{.?}|\[.?])', data, re.DOTALL)
 
     for blob in json_candidates:
         try:
@@ -192,27 +188,28 @@ def prepare_metric_inputs(validated_metrics, data):
 
 def improve_prompt(instruction):
     cfg = get_config()
+
     try:
         prompt = f'''
-        You are a prompt improvement assistant.
-        Your task is to analyze the user instruction and suggest improvements to make it clearer, more specific, and easier to understand such that it can be effectively used to determine the user's intent (one of the following)
-        Possible user intents:
-        - full_pipeline → evaluate model outputs, explain the metrics, and suggest improvements
-        - evaluation_only → just compute evaluation metrics
-        - interpretation_only → analyze/interpret existing metric results
-        - recommendation_only → suggest improvements based on results
-        - interpretation and recommendation → analyze and recommend
-        - vague/unclear → original instruction was not clear enough
+        You are a prompt improvement assistant for an evaluation library called EvalBench.
+
+        Your goal is to help the user rewrite their instruction to be clearer and more specific, so it can be mapped to one or more of the following steps in an evaluation pipeline:
+        - evaluation → Run metrics like accuracy, coherence, relevance, etc. on model outputs.
+        - interpretation → Explain what the evaluation scores mean and what they reveal.
+        - recommendation → Suggest improvements based on the evaluation results or their interpretation.
+
+        Only rewrite the instruction if it's ambiguous or vague. Avoid changing its meaning unnecessarily. If it's unclear what the user wants, try offering different possible directions.
+
+        Respond with:
+        'Sorry, I couldn’t understand your instruction. Here are some improvised ways you could phrase it:'
+
+        Then give 2–3 improved examples that:
+        - Are clearer and more actionable
+        - Explicitly or implicitly map to one or more of the steps above
+        - Use natural, user-friendly language
         
-        Start your response with:
-        'Sorry, I couldn’t understand your request. Here are some clearer ways you could phrase it:'
-        
-        Then list 2–3 improved versions of the instruction. Each suggestion should be:
-        - Clear and specific
-        - Actionable (so it maps to one of the intents below)
-        - Rewritten in plain, user-friendly language
-        
-        User Instruction:
+        ---
+        Original user instruction:
         \'\'\'{instruction}\'\'\'
         '''
 
@@ -224,7 +221,18 @@ def improve_prompt(instruction):
 
         improved_instruction = response.choices[0].message.content.strip()
     except Exception as e:
-        improved_instruction = instruction  # fallback to original if error occurs
+        improved_instruction = 'Sorry, unable to provide instruction improvements at this time. Please try rephrasing your request.'
 
     return improved_instruction
+
+def retry_with_backoff(func, max_retries=3, initial_delay=1, *args, **kwargs):
+    delay = initial_delay
+    for attempt in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+                delay = 2
+    return None
 
