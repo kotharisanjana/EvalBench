@@ -1,4 +1,4 @@
-# EvalBench 🧪📊  
+# EvalBench 
 `EvalBench` is a plug-and-play Python package for evaluating outputs of large language models (LLMs) across a variety of metrics - from response quality and retrieval accuracy to hallucination and prompt alignment.
 
 It now includes agentic workflows: just describe what you want to understand or improve about your LLM outputs, and EvalBench will plan and execute a tailored sequence of evaluation, interpretation, and recommendation steps — automatically!
@@ -9,6 +9,7 @@ It now includes agentic workflows: just describe what you want to understand or 
 - Modular architecture to group related metrics and share inputs
 - Agentic execution: EvalBench can reason about your goal and execute the necessary steps (evaluate → interpret → recommend)
 - Batch support, configurable output (print/save), and JSON-compatible results
+- Supports both CLI and Python environment execution
 
 ### 📊 Modules and Metric Categories:
 
@@ -22,7 +23,7 @@ It now includes agentic workflows: just describe what you want to understand or 
 | response_alignment    | answer_relevance, helpfulness           | 
 | user defined module               | User-registered custom metrics                   | 
 
-### 🧠 Agentic Workflow
+### 🧠 Agentic Workflow:
 EvalBench follows a three-step agentic pipeline, automatically triggered based on user instructions:
 
 1. Evaluation – Runs relevant metrics to score model outputs. EvalBench intelligently selects which metrics to use if not explicitly specified.
@@ -46,9 +47,10 @@ All usage examples, including how to write your own custom metrics and how to us
 
 ## 💡 Use Cases
 EvalBench is ideal for:
-- Evaluating LLM apps like summarization tools, chat agents, and search bots
-- Creating your own domain-specific evaluation strategies
-- Getting automatic suggestions on how to improve prompts or evaluation design
+- Evaluating LLM apps like summarizers, chatbots, and search agents using built-in metrics
+- Integrating custom, domain-specific metrics into the EvalBench's ecosystem
+- Getting automatic eval → interpret → recommend pipelines from natural language instructions
+- Rapidly iterating on model outputs, prompts, and evaluation strategies
   
 ---
 
