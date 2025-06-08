@@ -14,9 +14,13 @@ class Master:
         self.request = {}
 
     def handle_user_request(self, instruction, data=None, eval_results=None, interpretation=None):
+        if not isinstance(instruction, str) or not instruction.strip():
+            raise ValueError('Instruction must be a non-empty string that instructs the agent to perform a tas.')
+
         intent = helper.get_user_intent(instruction) # identify the steps to execute (evaluation/interpretation/recommendation)
         task = helper.get_task(instruction, data) # to assist in interpretation and recommendation
-        input_data = helper.parse_data(data) # parse data in the required form for downstream tasks
+        input_data = helper.parse_data(intent, data) # parse data in the required form for downstream tasks
+
         self.request = {
             'instruction': instruction,
             'intent': intent,
@@ -39,15 +43,27 @@ class Master:
         intent = self.request['intent']
         if intent == 'full_pipeline':
             results = self.module_selector_agent.execute()
-            interpretation = self.interpretation_agent.interpret(results)
-            recommendations = self.recommendation_agent.recommend(results, interpretation)
+            if results:
+                interpretation = self.interpretation_agent.interpret(results)
+                recommendations = self.recommendation_agent.recommend(results, interpretation)
+            # if metrics not found, results would be none - suggest improving the prompt
+            else:
+                raise ValueError(helper.improve_prompt(self.request['instruction']))
         elif intent == 'evaluation_only':
             results = self.module_selector_agent.execute()
+            if not results:
+                raise ValueError(helper.improve_prompt(self.request['instruction']))
         elif intent == 'interpretation_only':
+            if not self.request['results']:
+                raise ValueError('Results must be provided for interpretation.')
             interpretation = self.interpretation_agent.interpret()
         elif intent == 'recommendation_only':
+            if not self.request['results']:
+                raise ValueError('Results must be provided for recommendations.')
             recommendations = self.recommendation_agent.recommend()
         elif intent == 'interpretation and recommendation':
+            if not self.request['results']:
+                raise ValueError('Results must be provided for interpretation and recommendation.')
             interpretation = self.interpretation_agent.interpret()
             recommendations = self.recommendation_agent.recommend(interpretation)
         else:

@@ -1,6 +1,7 @@
 import re
 import json
 from typing import List
+import time
 from collections import defaultdict
 import evalbench
 from evalbench.runtime_setup.runtime import get_config
@@ -8,7 +9,8 @@ from evalbench.runtime_setup.runtime import get_config
 # make confident decisions so downstream processes are deterministic and manageable
 def get_user_intent(instruction):
     cfg = get_config()
-    try:
+
+    def call():
         prompt = f'''
         You are an intent classification assistant.
         Your task is to determine the user's intent based on their instruction for using the evaluation library.
@@ -38,61 +40,60 @@ def get_user_intent(instruction):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=0,
         )
-        intent = response.choices[0].message.content.strip()
-    except Exception as e:
-        intent = None
+        return response.choices[0].message.content.strip()
 
-    return intent
+    return retry_with_backoff(call)
 
 def get_task(instruction, data):
     cfg = get_config()
-    try:
+
+    def call():
         prompt = f'''
         You are a task identification assistant.
         Your job is to identify the underlying NLP task the user is working on based on their instruction and data. 
         The user may talk about evaluation, interpretation, or improvement, but your focus is only on identifying the core language task being performed — such as question answering, summarization, dialogue generation, etc.
-
+    
         Guidelines:
         - Output only the name of the NLP task.
         - Your answer should be short (3-5 words max), lowercase, and specific (e.g., 'retrieval-based question answering', 'document summarization', 'chatbot response generation').
         - Ignore mentions of evaluation, interpretation, or improvement. Focus on what kind of language task the model is being used for.
         - If the task is unclear or ambiguous, return: `unknown`
-
+    
         ---
-
+    
         Examples:
-
+    
         Instruction:
         'Is the answer factually accurate and relevant to the user’s query?'
         Data:
         {{'query': 'What is photosynthesis?', 'response': 'It is how plants make energy from sunlight.'}}
         → retrieval-based question answering
-
+    
         Instruction:
         'Check if the summary captures all the key points and suggest improvements.'
         Data:
         {{'text': '...', 'summary': '...'}}
         → document summarization
-
+    
         Instruction:
         'Evaluate the response quality and help me improve my chatbot.'
         Data:
         {{'query': 'What's the weather today?', 'response': 'Hi there! I'm not sure.'}}
         → chatbot response generation
-
+    
         Instruction:
         'Evaluate this for coherence.'
         Data:
         N/A
         → unknown
-
+    
         ---
-
+    
         Now, identify the task for the input below.
-
+    
         User Instruction:
         \'\'\'{instruction}\'\'\'
-
+    
         Input Data:
         \'\'\'{data if data else 'N/A'}\'\'\'
         '''
@@ -102,13 +103,16 @@ def get_task(instruction, data):
             messages=[{'role': 'user', 'content': prompt}],
             temperature=1,
         )
-        task = response.choices[0].message.content.strip()
-    except Exception as e:
-        task = None
 
-    return task
+        return response.choices[0].message.content.strip()
 
-def parse_data(data):
+    return retry_with_backoff(call)
+
+def parse_data(intent, data):
+    if intent == 'full_evaluation' or intent == 'evaluation_only':
+        if not data:
+            raise ValueError('Data is required for evaluation tasks.')
+
     if isinstance(data, (dict, list)):
         data = json.dumps(data)
 
@@ -192,6 +196,7 @@ def prepare_metric_inputs(validated_metrics, data):
 
 def improve_prompt(instruction):
     cfg = get_config()
+
     try:
         prompt = f'''
         You are a prompt improvement assistant.
@@ -205,7 +210,7 @@ def improve_prompt(instruction):
         - vague/unclear → original instruction was not clear enough
         
         Start your response with:
-        'Sorry, I couldn’t understand your request. Here are some clearer ways you could phrase it:'
+        'Sorry, I couldn’t understand your instruction. Here are some improvised ways you could phrase it:'
         
         Then list 2–3 improved versions of the instruction. Each suggestion should be:
         - Clear and specific
@@ -224,7 +229,18 @@ def improve_prompt(instruction):
 
         improved_instruction = response.choices[0].message.content.strip()
     except Exception as e:
-        improved_instruction = instruction  # fallback to original if error occurs
+        improved_instruction = 'Sorry, unable to provide instruction improvements at this time. Please try rephrasing your request.'
 
     return improved_instruction
+
+def retry_with_backoff(func, max_retries=3, initial_delay=1, *args, **kwargs):
+    delay = initial_delay
+    for attempt in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+                delay *= 2
+    return None
 
