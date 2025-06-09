@@ -4,7 +4,7 @@ from evalbench.agents.module_selection import ModuleSelection
 from evalbench.agents.recommendation import Recommendation
 from evalbench.runtime_setup.runtime import get_config
 import evalbench.utils.agent_helper as helper
-from evalbench.utils.metrics_helper import generate_report
+from evalbench.utils.output_control import generate_report
 
 class Master:
     def __init__(self):

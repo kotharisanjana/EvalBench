@@ -1,5 +1,5 @@
 from evalbench.agents.master import Master
-import evalbench.utils.print_control as print_control
+import evalbench.utils.output_control as print_control
 
 def run_agent_pipeline(instruction, data=None, results=None, interpretation=None):
     print_control.suppress_printing()
