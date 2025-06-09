@@ -12,15 +12,15 @@ It now includes agentic workflows: just describe what you want to understand or 
 
 ### 📊 Modules and Metric Categories:
 
-| Module               | Metrics                                          | 
-|----------------------|-------------------------------------------------|
-| response_quality     | conciseness, coherence, factuality  | 
-| reference_based      | bleu, rouge, meteor, semantic_similarity, bert  | 
-| contextual_generation | faithfulness, hallucination, groundedness       | 
-| retrieval          | recall@k, precision@k, ndcg@k, mrr            | 
-| query_alignment       | context_relevance                              | 
-| response_alignment    | answer_relevance, helpfulness           | 
-| user defined module               | User-registered custom metrics                   | 
+| Module               | Metrics                                                                      | 
+|----------------------|------------------------------------------------------------------------------|
+| response_quality     | conciseness_score, coherence_score, factuality_score                         | 
+| reference_based      | bleu_score, rouge_score, meteor_score, semantic_similarity_score, bert_score | 
+| contextual_generation | faithfulness_score, hallucination_score, groundedness_score                  | 
+| retrieval          | recall_at_k_score, precision_at_k_score, ndcg_at_k_score, mrr_score          | 
+| query_alignment       | context_relevance_score                                                      | 
+| response_alignment    | response_relevance_score, response_helpfulness_score                         | 
+| user defined module               | User-registered custom metrics                                               | 
 
 ### 🧠 Agentic Workflow:
 EvalBench follows a three-step agentic pipeline, automatically triggered based on user instructions:

@@ -28,7 +28,7 @@ decorators = ['register_metric', 'handle_output']
 custom = ['load_custom_metrics']
 
 # configs
-configs = ['EvalConfig', 'set_config']
+configs = ['EvalConfig', 'set_config', 'EvalConfig.from_file']
 
 # agent_pipeline
 agent_pipeline = ['run_agent_pipeline']

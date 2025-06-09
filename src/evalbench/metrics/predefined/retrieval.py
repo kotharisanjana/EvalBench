@@ -4,7 +4,7 @@ from evalbench.utils.metrics_helper import handle_output, register_metric
 import evalbench.error_handling.validation_helpers as validation
 
 @register_metric(
-    'recall@k',
+    'recall_at_k',
     required_args=['relevant_docs', 'retrieved_docs', 'k'],
     arg_types=[List[List[str]], List[List[str]], int],
     module='retrieval'
@@ -20,7 +20,7 @@ def recall_at_k(relevant_docs: List[List[str]], retrieved_docs: List[List[str]],
     ]
 
 @register_metric(
-    'precision@k',
+    'precision_at_k',
     required_args=['relevant_docs', 'retrieved_docs', 'k'],
     arg_types=[List[List[str]], List[List[str]], int],
     module='retrieval'
@@ -42,7 +42,7 @@ def _dcg(relevance_scores: list) -> int:
     ])
 
 @register_metric(
-    'ndcg@k',
+    'ndcg_at_k',
     required_args=['relevant_docs', 'retrieved_docs', 'k'],
     arg_types=[List[List[str]], List[List[str]], int],
     module='retrieval'
