@@ -71,7 +71,8 @@ class ModuleSelection:
 
             requested_metrics = response.choices[0].message.content.strip()
             requested_metrics = ast.literal_eval(requested_metrics)
-            self.validated_metrics = [m for m in requested_metrics if m in self.available_metrics]
+            validated_metrics = [m for m in requested_metrics if m in self.available_metrics]
+            return validated_metrics
 
         self.validated_metrics = retry_with_backoff(call)
 
@@ -89,6 +90,7 @@ class ModuleSelection:
                 results[metric] = result
             except Exception as e:
                 results[metric] = {'error': str(e)}
+
         return results
 
 

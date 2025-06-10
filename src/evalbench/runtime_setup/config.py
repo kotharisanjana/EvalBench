@@ -27,7 +27,7 @@ class EvalConfig:
 
         self.groq_client = Groq()
 
-        # Initialize once and store
+        # initialize once and store
         self.sentence_model = SentenceTransformer(sentence_model)
         self.fact_check_model = pipeline('zero-shot-classification', fact_check_model)
         self.llm = llm
@@ -57,7 +57,7 @@ class EvalConfig:
         if not isinstance(self.output_mode, str) or self.output_mode not in ('print', 'save'):
             errors.append(f'Invalid output_mode: {self.output_mode}')
 
-        # Optional: check model names are strings
+        # check model names are strings
         if not isinstance(self.sentence_model, SentenceTransformer):
             errors.append('sentence_model not initialized correctly.')
         if not callable(getattr(self.fact_check_model, '__call__', None)):
@@ -65,3 +65,6 @@ class EvalConfig:
 
         if errors:
             raise ValueError('Invalid configuration')
+
+def load_config(filepath):
+    return EvalConfig.from_file(filepath)

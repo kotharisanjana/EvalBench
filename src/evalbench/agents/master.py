@@ -48,11 +48,11 @@ class Master:
                 if not results:
                     raise ValueError(helper.improve_prompt(self.request['instruction']))
             elif step == 'interpretation':
-                if not results or not self.request['results']:
+                if not results and  not self.request['results']:
                     raise ValueError('Evaluation results required for interpretation. Please ensure that the evaluation step is executed before interpretation or provide results explicitly.')
                 interpretation = self.interpretation_agent.interpret(results)
             elif step == 'recommendation':
-                if not results or not self.request['results']:
+                if not results and not self.request['results']:
                     raise ValueError('Evaluation results required for recommendation. Please ensure that the evaluation step is executed or provide results explicitly.')
                 recommendations = self.recommendation_agent.recommend(results, interpretation)
             else:
