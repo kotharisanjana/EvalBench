@@ -40,7 +40,7 @@ pip install evalbench
 
 All usage examples, including how to write your own custom metrics and how to use the agentic pipeline in practice, are available in this Jupyter notebook:
 
-👉 View the Notebook →
+👉 [View the Notebook](https://colab.research.google.com/drive/1Y0oSzgPahpANlTbfrbTz9aMPNbr_3H2e#scrollTo=8gUQe2G7VDQ1)
 
 ---
 

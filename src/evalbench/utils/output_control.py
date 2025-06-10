@@ -107,12 +107,12 @@ def save_results(name, input_data, result, error_message):
             f.write(json.dumps(record) + '\n')
 
 def generate_report(request):
-    instruction = request.get('instruction', 'N/A').strip()
-    task = request.get('task', 'Unknown').strip()
+    instruction = request.get('instruction', 'N/A')
+    task = request.get('task', 'Unknown')
     data = json.dumps(request.get('data', {}), indent=2) if request.get('data') else 'N/A'
     results = request.get('results', {})
-    interpretation = request.get('interpretation', '').strip()
-    recommendations = request.get('recommendations', '').strip()
+    interpretation = request.get('interpretation', '')
+    recommendations = request.get('recommendations', '')
 
     report = [
         '---',
@@ -124,16 +124,22 @@ def generate_report(request):
 
     if results:
         report.append('Evaluation Results:')
-        report.append(json.dumps(results, indent=2))
+        if isinstance(results, (dict, list)):
+            report.append(json.dumps(results, indent=2))
+        else:
+            report.append(str(results))  # fallback
         report.append('')
 
     if interpretation:
         report.append('Interpretation:')
-        report.append(interpretation)
+        if isinstance(interpretation, list):
+            report.append('\n'.join(interpretation))
+        else:
+            report.append(interpretation)
         report.append('')
 
     if recommendations:
-        report.append('Recommendations:')
+        report.append('Recommendation:')
         report.append(recommendations)
         report.append('')
 

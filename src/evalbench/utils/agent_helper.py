@@ -1,6 +1,4 @@
-import re
 import json
-from typing import List
 import time
 from collections import defaultdict
 import evalbench
@@ -20,8 +18,11 @@ def plan_steps(instruction):
         2. interpretation → Analyze and explain the evaluation results to help the user understand what the scores mean and what they reveal about the model's behavior.
         3. recommendation → Based on the evaluation results (and optionally their interpretation), suggest actions to improve model performance, prompt design, data, or evaluation strategy.
         
-        Only include a step if the user instruction clearly asks for it (either explicitly or implicitly).  
-        Output a Python list of strings in the correct order, using only the terms: 'evaluation', 'interpretation', 'recommendation'.
+        Instructions:
+        - Only include a step if the user instruction clearly asks for it (either explicitly or implicitly).  
+        - Output a Python list of strings in the correct order, using only the terms: 'evaluation', 'interpretation', 'recommendation'.
+        - Return only the list without any additional text or explanation preceeding it or following it.
+        - If the instruction is unclear or does not map to any of these steps, return: `[]`
         
         ---
         User Instruction:
@@ -106,62 +107,55 @@ def parse_data(steps_to_execute, data):
             raise ValueError('Data is required for evaluation tasks.')
 
     if isinstance(data, (dict, list)):
-        data = json.dumps(data)
+        data_str = json.dumps(data)
+    else:
+        data_str = data
 
-    json_candidates = re.findall(r'(\{.?}|\[.?])', data, re.DOTALL)
+    try:
+        parsed = json.loads(data_str)
+    except json.JSONDecodeError:
+        raise ValueError("Invalid JSON input data.")
 
-    for blob in json_candidates:
-        try:
-            parsed = json.loads(blob)
+    # If parsed is a list of dicts, extract input_data dict of lists
+    if isinstance(parsed, list) and all(isinstance(item, dict) for item in parsed):
+        keys = set(parsed[0].keys())
+        if not all(set(item.keys()) == keys for item in parsed):
+            raise ValueError('Inconsistent keys across batch examples.')
 
-            # batch mode
-            if isinstance(parsed, list) and all(isinstance(item, dict) for item in parsed):
-                keys = set(parsed[0].keys())
-                if not all(set(item.keys()) == keys for item in parsed):
-                    raise ValueError('Inconsistent keys across batch examples.')
+        input_data = defaultdict(list)
+        for item in parsed:
+            for key in keys:
+                input_data[key].append(item.get(key, ''))
 
-                input_data = defaultdict(list)
-                for item in parsed:
-                    for key in keys:
-                        input_data[key].append(item.get(key, ''))
+        return input_data
 
-                return input_data
+    else:
+        raise ValueError(
+            'Missing input data / Unable to extract valid input data. Please ensure your input is a list of dicts with required fields.')
 
-            # single example mode
-            elif isinstance(parsed, dict):
-                return parsed
 
-            else:
-                raise ValueError(
-                    'Missing input data / Unable to extract valid input data. Please ensure your input is in the correct JSON format with required fields.')
-
-        except json.JSONDecodeError:
-            break
-
-    return {}
-
-def convert_type(raw_type, expected_type):
-    if expected_type == str:
-        if isinstance(raw_type, list):
-            return ' '.join(map(str, raw_type))
-        return str(raw_type)
-
-    elif expected_type == List[str]:
-        if isinstance(raw_type, str):
-            return [raw_type]
-        if isinstance(raw_type, list):
-            return [str(v) for v in raw_type]
-        return [str(raw_type)]
-
-    elif expected_type == List[List[str]]:
-        if isinstance(raw_type, list):
-            if all(isinstance(v, str) for v in raw_type):
-                return [raw_type]
-            if all(isinstance(v, list) for v in raw_type):
-                return [[str(i) for i in v] for v in raw_type]
-        return [[str(raw_type)]]
-
-    return [str(raw_type)]
+# def convert_type(raw_type, expected_type):
+#     if expected_type == str:
+#         if isinstance(raw_type, list):
+#             return ' '.join(map(str, raw_type))
+#         return str(raw_type)
+#
+#     elif expected_type == List[str]:
+#         if isinstance(raw_type, str):
+#             return [raw_type]
+#         if isinstance(raw_type, list):
+#             return [str(v) for v in raw_type]
+#         return [str(raw_type)]
+#
+#     elif expected_type == List[List[str]]:
+#         if isinstance(raw_type, list):
+#             if all(isinstance(v, str) for v in raw_type):
+#                 return [raw_type]
+#             if all(isinstance(v, list) for v in raw_type):
+#                 return [[str(i) for i in v] for v in raw_type]
+#         return [[str(raw_type)]]
+#
+#     return [str(raw_type)]
 
 def prepare_metric_inputs(validated_metrics, data):
     metric_inputs_map = {}
@@ -172,17 +166,10 @@ def prepare_metric_inputs(validated_metrics, data):
             continue
 
         required_args = metric_info.get('required_args', [])
-        arg_types = metric_info.get('arg_types', [])
+        # arg_types = metric_info.get('arg_types', [])
 
         if all(k in data for k in required_args):
-            metric_inputs = {}
-            for arg_name, expected_type in zip(required_args, arg_types):
-                raw_value = data.get(arg_name)
-
-                converted_value = convert_type(raw_value, expected_type)
-                metric_inputs[arg_name] = converted_value
-
-            metric_inputs_map[metric] = metric_inputs
+            metric_inputs_map[metric] = data
 
     return metric_inputs_map
 
@@ -235,4 +222,3 @@ def retry_with_backoff(func, max_retries=3, initial_delay=1, *args, **kwargs):
                 time.sleep(delay)
                 delay = 2
     return None
-

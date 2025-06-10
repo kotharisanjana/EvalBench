@@ -64,9 +64,6 @@ def expose_metrics(module):
                 if hasattr(evalbench, '__all__'):
                     evalbench.__all__.append(name)
 
-def expose_additional_helpers(helpers):
-    evalbench.__all__.extend(helpers)
-
 # expose metrics module
 def expose_custom_metrics(module):
     name = module.__name__.split('.')[-1]
@@ -91,3 +88,16 @@ def download_nltk_data():
         nltk.data.find('corpora/wordnet')
     except LookupError:
         nltk.download('wordnet')
+
+def show_metrics():
+    print("📋 Available Metrics in EvalBench\n")
+    print(f"{'Function':<25} {'Module':<20} {'Required Args':<30} {'Arg Types':<40}")
+    print("-" * 120)
+
+    for name, meta in evalbench.metric_registry.items():
+        func = meta['func'].__name__
+        module = meta['module']
+        required_args = ", ".join(meta['required_args'])
+        arg_types = ", ".join(t.__name__ if hasattr(t, '__name__') else str(t) for t in meta['arg_types'])
+
+        print(f"{func:<25} {module:<20} {required_args:<30} {arg_types:<40}")
