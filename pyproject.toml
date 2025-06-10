@@ -4,8 +4,8 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'evalbench'
-version = '0.1.4'
-description = 'A collection of evaluation metrics for LLM tasks'
+version = '0.7.0'
+description = "Lightweight, modular library for evaluating LLM outputs with built-in metrics, custom extensions, and agentic workflows."
 authors = [
     { name='kotharisanjana', email='sanjanak98@gmail.com' }
 ]
