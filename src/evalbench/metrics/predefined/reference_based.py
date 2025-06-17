@@ -10,58 +10,58 @@ import evalbench.error_handling.validation_helpers as validation
 
 @register_metric(
     'bleu',
-    required_args=['reference', 'generated'],
+    required_args=['reference', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='reference_based'
 )
 @handle_output()
-def bleu_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
+def bleu_score(reference: List[str], llm_response: List[str]) -> List[float]:
+    validation.validate_batch_inputs(('reference', reference), ('llm_response', llm_response))
 
     return [
         round(sentence_bleu([word_tokenize(ref)], word_tokenize(gen)), 2)
-        for ref, gen in zip(reference, generated)
+        for ref, gen in zip(reference, llm_response)
     ]
 
 @register_metric(
     'rouge',
-    required_args=['reference', 'generated'],
+    required_args=['reference', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='reference_based')
 @handle_output()
-def rouge_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
+def rouge_score(reference: List[str], llm_response: List[str]) -> List[Dict[str, float]]:
+    validation.validate_batch_inputs(('reference', reference), ('llm_response', llm_response))
 
     scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
     return [
         {k: round(v.fmeasure, 2) for k, v in scorer.score(ref, gen).items()}
-        for ref, gen in zip(reference, generated)
+        for ref, gen in zip(reference, llm_response)
     ]
 
 @register_metric(
     'meteor',
-    required_args=['reference', 'generated'],
+    required_args=['reference', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='reference_based'
 )
 @handle_output()
-def meteor_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
+def meteor_score(reference: List[str], llm_response: List[str]) -> List[float]:
+    validation.validate_batch_inputs(('reference', reference), ('llm_response', llm_response))
 
     return [
         round(meteor([word_tokenize(ref)], word_tokenize(gen)), 2)
-        for ref, gen in zip(reference, generated)
+        for ref, gen in zip(reference, llm_response)
     ]
 
 @register_metric(
     'semantic_similarity',
-    required_args=['reference', 'generated'],
+    required_args=['reference', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='reference_based'
 )
 @handle_output()
-def semantic_similarity_score(reference: List[str], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
+def semantic_similarity_score(reference: List[str], llm_response: List[str]) -> List[float]:
+    validation.validate_batch_inputs(('reference', reference), ('llm_response', llm_response))
 
     cfg = get_config()
 
@@ -70,20 +70,20 @@ def semantic_similarity_score(reference: List[str], generated: List[str]) -> Lis
             cfg.sentence_model.encode(ref, convert_to_tensor=True),
             cfg.sentence_model.encode(gen, convert_to_tensor=True)
         ).item(), 2)
-        for ref, gen in zip(reference, generated)
+        for ref, gen in zip(reference, llm_response)
     ]
 
 @register_metric(
     'bert',
-    required_args=['reference', 'generated'],
+    required_args=['reference', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='reference_based'
 )
 @handle_output()
-def bert_score(reference: List[str], generated: List[str]) -> List[Dict[str, float]]:
-    validation.validate_batch_inputs(('reference', reference), ('generated', generated))
+def bert_score(reference: List[str], llm_response: List[str]) -> List[Dict[str, float]]:
+    validation.validate_batch_inputs(('reference', reference), ('llm_response', llm_response))
 
-    precision, recall, f1 = bert.score(generated, reference, lang='en', verbose=False)
+    precision, recall, f1 = bert.score(llm_response, reference, lang='en', verbose=False)
     return [
         {
             'precision': round(precision[i].item(), 2),
