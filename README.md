@@ -54,6 +54,5 @@ EvalBench is ideal for:
 ---
 
 ## 🚧 Coming Soon
-- Dataset evaluation integration
-- Ecosystem integration - langchain/llama_index hooks
+- Ecosystem integration - langchain hook
 - CLI support
