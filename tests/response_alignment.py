@@ -12,17 +12,17 @@ def test_data():
             ['Common symptoms include high body temperature and confusion.'],
             ['Just be yourself and it will work out on its own']
         ],
-        'responses': [
+        'llm_response': [
             'The Eiffel Tower is in Paris.',
             'Practice regularly and join a speaking group like Toastmasters.'
         ]
     }
 def test_answer_relevance(test_data):
-    score = response_alignment.answer_relevance_score(test_data['queries'], test_data['responses'])
+    score = response_alignment.response_relevance_score(test_data['queries'], test_data['llm_response'])
     assert all(isinstance(s, str) for s in score), \
         f'Expected relevance scores to be string in [1, 5], but got {score}'
 
 def test_helpfulness_score(test_data):
-    score = response_alignment.helpfulness_score(test_data['queries'], test_data['responses'])
+    score = response_alignment.response_helpfulness_score(test_data['queries'], test_data['llm_response'])
     assert all(isinstance(s, str) for s in score), \
         f'Expected relevance scores to be string in [1, 5], but got {score}'

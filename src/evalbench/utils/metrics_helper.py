@@ -77,6 +77,16 @@ def expose_custom_metrics(module):
             if hasattr(evalbench, '__all__'):
                 evalbench.__all__.append(name)
 
+# build module-metric map for lookup
+def build_module_metric_map(module):
+    for public_name, module_path in module.items():
+        mod = importlib.import_module(f'evalbench.{module_path}')
+        metric_names = []
+        for name, obj in inspect.getmembers(mod):
+            if callable(obj) and not name.startswith('_'):
+                metric_names.append(name)
+        evalbench.module_metric_map[public_name] = metric_names
+
 # download NLTK data if not present
 def download_nltk_data():
     try:

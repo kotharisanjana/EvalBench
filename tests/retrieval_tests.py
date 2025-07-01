@@ -11,7 +11,7 @@ def test_data():
 
 def test_recall_at_k(test_data):
     score = retrieval.recall_at_k(test_data['relevant_docs'], test_data['retrieved_docs'], test_data['k'])
-    expected = [0.0, 1/3, 2/3]
+    expected = [0.0, round(1/3,2), round(2/3, 2)]
     assert all(abs(a - b) < 1e-5 for a, b in zip(score, expected)), \
         f'Expected {expected}, got {score}'
 

@@ -19,7 +19,8 @@ dependencies = [
     'sentence-transformers',
     'groq',
     'rouge-score',
-    'bert-score'
+    'bert-score',
+    'langchain'
 ]
 
 [project.optional-dependencies]

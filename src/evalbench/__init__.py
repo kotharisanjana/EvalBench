@@ -1,12 +1,13 @@
 from evalbench.runtime_setup.config import EvalConfig, load_config
-from evalbench.metrics.evaluate_module import evaluate_module
-from evalbench.utils.metrics_helper import expose_metrics, register_metric, handle_output, show_metrics
+from evalbench.metrics.evaluate import evaluate_module
+from evalbench.utils.metrics_helper import expose_metrics, register_metric, handle_output, show_metrics, build_module_metric_map
 from evalbench.metrics.custom.custom_metrics import load_custom_metrics
 from evalbench.runtime_setup.runtime import set_config
 from evalbench.agents.run_agent import run_agent_pipeline
 
 metric_registry = {}
 __all__ = []
+module_metric_map = {}
 
 MODULES = {
     'response_quality': 'metrics.predefined.response_quality',
@@ -30,3 +31,5 @@ expose_metrics(MODULES)
 
 for group in EXPORTED_SYMBOLS.values():
     __all__.extend(group)
+
+build_module_metric_map(MODULES)

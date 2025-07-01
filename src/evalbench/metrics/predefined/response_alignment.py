@@ -5,18 +5,18 @@ from evalbench.utils.enum import Relevance, AnswerHelpfulness
 
 @register_metric(
     'response_relevance',
-    required_args=['query', 'response'],
+    required_args=['query', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='response_alignment'
 )
 @handle_output()
-def response_relevance_score(query: List[str], response: List[str]) -> List[str]:
-    validation.validate_batch_inputs(('response', response), ('query', query))
+def response_relevance_score(query: List[str], llm_response: List[str]) -> List[str]:
+    validation.validate_batch_inputs(('llm_response', llm_response), ('query', query))
 
     cfg = get_config()
     results = []
 
-    for q, r in zip(query, response):
+    for q, r in zip(query, llm_response):
         prompt = f'''
         You are an expert evaluator. Rate how relevant a given response is to a specific question, on a scale from 1 to 5.
 
@@ -69,18 +69,18 @@ def response_relevance_score(query: List[str], response: List[str]) -> List[str]
 
 @register_metric(
     'response_helpfulness',
-    required_args=['query', 'response'],
+    required_args=['query', 'llm_response'],
     arg_types=[List[str], List[str]],
     module='response_alignment'
 )
 @handle_output()
-def response_helpfulness_score(query: List[str], response: List[str]) -> List[str]:
-    validation.validate_batch_inputs(('response', response), ('query', query))
+def response_helpfulness_score(query: List[str], llm_response: List[str]) -> List[str]:
+    validation.validate_batch_inputs(('llm_response', llm_response), ('query', query))
 
     cfg = get_config()
     results = []
 
-    for q, r in zip(query, response):
+    for q, r in zip(query, llm_response):
         prompt = f'''
             You are a helpful and fair evaluator. Your task is to assess the following response based on answer helpfulness using a numeric rating between 1 and 5. Respond with only the number.
 

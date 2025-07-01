@@ -5,21 +5,21 @@ from evalbench.utils.enum import Groundedness
 
 @register_metric(
     'faithfulness',
-    required_args=['context', 'generated'],
-    arg_types=[List[List[str]], List[str]],
+    required_args=['context', 'llm_response'],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(('context', context), ('generated', generated))
+def faithfulness_score(context: List[str], llm_response: List[str]) -> List[float]:
+    validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
     candidate_labels = ['faithful to context', 'unfaithful to context']
     results = []
 
-    for ctx, gen in zip(context, generated):
+    for ctx, gen in zip(context, llm_response):
         result = cfg.fact_check_model(
-            sequences=' '.join(ctx),
+            sequences=ctx,
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
@@ -31,21 +31,21 @@ def faithfulness_score(context: List[List[str]], generated: List[str]) -> List[f
 
 @register_metric(
     'hallucination',
-    required_args=['context', 'generated'],
-    arg_types=[List[List[str]], List[str]],
+    required_args=['context', 'llm_response'],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def hallucination_score(context: List[List[str]], generated: List[str]) -> List[float]:
-    validation.validate_batch_inputs(('context', context), ('generated', generated))
+def hallucination_score(context: List[str], llm_response: List[str]) -> List[float]:
+    validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
     candidate_labels = ['entailment', 'neutral', 'contradiction']
     results = []
 
-    for ctx, gen in zip(context, generated):
+    for ctx, gen in zip(context, llm_response):
         result = cfg.fact_check_model(
-            sequences=' '.join(ctx),
+            sequences=ctx,
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
@@ -58,18 +58,18 @@ def hallucination_score(context: List[List[str]], generated: List[str]) -> List[
 
 @register_metric(
     'groundedness',
-    required_args=['context', 'generated'],
-    arg_types=[List[List[str]], List[str]],
+    required_args=['context', 'llm_response'],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def groundedness_score(context: List[List[str]], generated: List[str]) -> List[str]:
-    validation.validate_batch_inputs(('context', context), ('generated', generated))
+def groundedness_score(context: List[str], llm_response: List[str]) -> List[str]:
+    validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
     results = []
 
-    for ctx, gen in zip(context, generated):
+    for ctx, gen in zip(context, llm_response):
         prompt = f'''
         You are a helpful evaluator. Given a retrieved context and a generated response, your task is to rate how well the response is grounded in the context. Use the following 1–3 scale:
 

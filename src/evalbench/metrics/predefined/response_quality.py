@@ -5,17 +5,17 @@ from evalbench.utils.enum import Coherence, Conciseness
 
 @register_metric(
     'conciseness',
-    required_args=['response'],
+    required_args=['llm_response'],
     arg_types=[List[str]],
     module='response_quality'
 )
 @handle_output()
-def conciseness_score(response: List[str]) -> List[str]:
-    validation.validate_type_list_non_empty(('response', response))
+def conciseness_score(llm_response: List[str]) -> List[str]:
+    validation.validate_type_list_non_empty(('llm_response', llm_response))
 
     cfg = get_config()
     results = []
-    for resp in response:
+    for resp in llm_response:
         prompt = f'''
         You are a helpful and fair evaluator. Your task is to assess the following response based on conciseness using a numeric rating between 1 and 3. Respond with only the number.
 
@@ -62,18 +62,18 @@ def conciseness_score(response: List[str]) -> List[str]:
 
 @register_metric(
     'coherence',
-    required_args=['response'],
+    required_args=['llm_response'],
     arg_types=[List[str]],
     module='response_quality'
 )
 @handle_output()
-def coherence_score(response: List[str]) -> List[str]:
-    validation.validate_type_list_non_empty(('response', response))
+def coherence_score(llm_response: List[str]) -> List[str]:
+    validation.validate_type_list_non_empty(('llm_response', llm_response))
     
     cfg = get_config()
     results = []
 
-    for resp in response:
+    for resp in llm_response:
         prompt = f'''
         You are a helpful and fair evaluator. Your task is to assess the following response based on coherence using a numeric rating between 1 and 3. Respond with only the number.
 
@@ -120,19 +120,19 @@ def coherence_score(response: List[str]) -> List[str]:
 
 @register_metric(
     'factuality',
-    required_args=['response'],
+    required_args=['llm_response'],
     arg_types=[List[str]],
     module='response_quality'
 )
 @handle_output()
-def factuality_score(response: List[str]) -> List[float]:
-    validation.validate_type_list_non_empty(('response', response))
+def factuality_score(llm_response: List[str]) -> List[float]:
+    validation.validate_type_list_non_empty(('llm_response', llm_response))
 
     cfg = get_config()
     candidate_labels = ['factually correct', 'factually incorrect']
     results = []
 
-    for resp in response:
+    for resp in llm_response:
         hypothesis = f'Is the following response factually correct. Response: ''{resp}'""
         result = cfg.fact_check_model(resp, candidate_labels, hypothesis=hypothesis)
         labels = result["labels"]
