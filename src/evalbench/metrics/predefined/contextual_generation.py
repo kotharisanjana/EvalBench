@@ -6,11 +6,11 @@ from evalbench.utils.enum import Groundedness
 @register_metric(
     'faithfulness',
     required_args=['context', 'llm_response'],
-    arg_types=[List[List[str]], List[str]],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def faithfulness_score(context: List[List[str]], llm_response: List[str]) -> List[float]:
+def faithfulness_score(context: List[str], llm_response: List[str]) -> List[float]:
     validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
@@ -19,7 +19,7 @@ def faithfulness_score(context: List[List[str]], llm_response: List[str]) -> Lis
 
     for ctx, gen in zip(context, llm_response):
         result = cfg.fact_check_model(
-            sequences=' '.join(ctx),
+            sequences=ctx,
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
@@ -32,11 +32,11 @@ def faithfulness_score(context: List[List[str]], llm_response: List[str]) -> Lis
 @register_metric(
     'hallucination',
     required_args=['context', 'llm_response'],
-    arg_types=[List[List[str]], List[str]],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def hallucination_score(context: List[List[str]], llm_response: List[str]) -> List[float]:
+def hallucination_score(context: List[str], llm_response: List[str]) -> List[float]:
     validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
@@ -45,7 +45,7 @@ def hallucination_score(context: List[List[str]], llm_response: List[str]) -> Li
 
     for ctx, gen in zip(context, llm_response):
         result = cfg.fact_check_model(
-            sequences=' '.join(ctx),
+            sequences=ctx,
             candidate_labels=candidate_labels,
             hypothesis=gen
         )
@@ -59,11 +59,11 @@ def hallucination_score(context: List[List[str]], llm_response: List[str]) -> Li
 @register_metric(
     'groundedness',
     required_args=['context', 'llm_response'],
-    arg_types=[List[List[str]], List[str]],
+    arg_types=[List[str], List[str]],
     module='contextual_generation'
 )
 @handle_output()
-def groundedness_score(context: List[List[str]], llm_response: List[str]) -> List[str]:
+def groundedness_score(context: List[str], llm_response: List[str]) -> List[str]:
     validation.validate_batch_inputs(('context', context), ('llm_response', llm_response))
 
     cfg = get_config()
